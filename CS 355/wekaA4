@@ -1,0 +1,86 @@
+=== Run information ===
+
+Scheme:       weka.classifiers.trees.UserClassifier 
+Relation:     segment
+Instances:    1500
+Attributes:   20
+              region-centroid-col
+              region-centroid-row
+              region-pixel-count
+              short-line-density-5
+              short-line-density-2
+              vedge-mean
+              vegde-sd
+              hedge-mean
+              hedge-sd
+              intensity-mean
+              rawred-mean
+              rawblue-mean
+              rawgreen-mean
+              exred-mean
+              exblue-mean
+              exgreen-mean
+              value-mean
+              saturation-mean
+              hue-mean
+              class
+Test mode:    user supplied test set:  size unknown (reading incrementally)
+
+=== Classifier model (full training set) ===
+
+
+Split on region-centroid-row AND intensity-mean (In Set): N1 sky(220.0)
+Split on region-centroid-row AND intensity-mean (Not in Set)
+|   Split on rawblue-mean AND hue-mean (In Set): N3 grass(240.0/33.0)
+|   Split on rawblue-mean AND hue-mean (Not in Set)
+|   |   Split on rawred-mean AND region-centroid-row (In Set): N5 path(238.0/2.0)
+|   |   Split on rawred-mean AND region-centroid-row (Not in Set)
+|   |   |   Split on hue-mean AND region-centroid-row (In Set): N7 brickface(230.0/30.0)
+|   |   |   Split on hue-mean AND region-centroid-row (Not in Set)
+|   |   |   |   Split on value-mean AND exgreen-mean (In Set): N9 cement(196.0/17.0)
+|   |   |   |   Split on value-mean AND exgreen-mean (Not in Set)
+|   |   |   |   |   Split on rawred-mean AND hue-mean (In Set): N11 window(195.0/56.0)
+|   |   |   |   |   Split on rawred-mean AND hue-mean (Not in Set)
+|   |   |   |   |   |   Split on exgreen-mean AND hue-mean (In Set): N13 foliage(178.0/14.0)
+|   |   |   |   |   |   Split on exgreen-mean AND hue-mean (Not in Set): N14 foliage(3.0/1.0)
+
+Time taken to build model: 1262.9 seconds
+
+=== Evaluation on test set ===
+
+Time taken to test model on supplied test set: 0.03 seconds
+
+=== Summary ===
+
+Correctly Classified Instances         723               89.2593 %
+Incorrectly Classified Instances        87               10.7407 %
+Kappa statistic                          0.8745
+Mean absolute error                      0.0542
+Root mean squared error                  0.1656
+Relative absolute error                 22.099  %
+Root relative squared error             47.2667 %
+Total Number of Instances              810     
+
+=== Detailed Accuracy By Class ===
+
+                 TP Rate  FP Rate  Precision  Recall   F-Measure  MCC      ROC Area  PRC Area  Class
+                 0.976    0.022    0.891      0.976    0.931      0.919    0.980     0.876     brickface
+                 1.000    0.000    1.000      1.000    1.000      1.000    1.000     1.000     sky
+                 0.869    0.032    0.828      0.869    0.848      0.821    0.955     0.795     foliage
+                 0.800    0.016    0.889      0.800    0.842      0.820    0.958     0.793     cement
+                 0.659    0.034    0.783      0.659    0.716      0.672    0.878     0.623     window
+                 1.000    0.001    0.989      1.000    0.995      0.994    0.999     0.989     path
+                 0.976    0.022    0.889      0.976    0.930      0.918    0.977     0.871     grass
+Weighted Avg.    0.893    0.019    0.890      0.893    0.890      0.872    0.962     0.842     
+
+=== Confusion Matrix ===
+
+   a   b   c   d   e   f   g   <-- classified as
+ 122   0   1   0   2   0   0 |   a = brickface
+   0 110   0   0   0   0   0 |   b = sky
+   3   0 106   3   8   0   2 |   c = foliage
+   7   0   1  88  13   1   0 |   d = cement
+   5   0  17   8  83   0  13 |   e = window
+   0   0   0   0   0  94   0 |   f = path
+   0   0   3   0   0   0 120 |   g = grass
+

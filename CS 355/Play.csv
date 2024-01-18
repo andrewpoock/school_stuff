@@ -1,0 +1,13 @@
+﻿Rain,Test,Sleep,Early,Activity
+FALSE,TRUE,Insufficient,FALSE,Walk
+TRUE,TRUE,Sufficient,FALSE,Study
+TRUE,FALSE,Insufficient,TRUE,Study
+TRUE,FALSE,Insufficient,TRUE,Study
+TRUE,TRUE,Insufficient,FALSE,Study
+TRUE,TRUE,Sufficient,TRUE,Study
+TRUE,FALSE,Sufficient,FALSE,Study
+FALSE,TRUE,Insufficient,TRUE,Walk
+FALSE,FALSE,Insufficient,FALSE,Walk
+FALSE,TRUE,Insufficient,FALSE,Walk
+TRUE,TRUE,Sufficient,TRUE,Study
+TRUE,TRUE,Insufficient,TRUE,Walk

@@ -1,0 +1,12 @@
+@relation train
+
+@attribute document string
+@attribute class {Yes, No}
+
+@data
+'The price of crude oil has increased significantly' Yes
+'Demand for crude oil outstrips supply' 	     Yes
+'Some people do not like the flavor of olive oil'    No
+'The food was very oily' 			     No
+'Crude oil is in short supply' 			     Yes
+'Use a bit of cooking oil in the frying pan' 	     No
