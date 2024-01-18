@@ -1,0 +1,118 @@
+---
+title: "Chapter 7 Homework"
+output: html_notebook
+---
+
+```{r}
+library(mosaic)
+require(mosaic)
+require(mosaicData)
+```
+
+## SAT Exploration
+
+In the SAT data `SAT.csv` , the variables have these units:
+• sat has units of "points."
+• expend has units of "dollars."
+• ratio has units of "students."
+• frac has units of "percentage points."
+
+Find the model formula for `sat ~ expend + frac`
+```{r}
+mod = lm(sat ~ expend + frac, data = SAT)
+```
+
+What are the coefficients of the model?
+```{r}
+coef(mod)
+```
+
+What is the model explaining and what are the variables used to try to explain
+that data?
+
+The model is sat score explained by expend and frac
+
+
+Consider the model formula `coef(mod)`
+
+(a) What are the units of the coefficient 994?
+    A points
+    B dollars
+    C students
+    D percentage points
+    E points per dollar
+    F students per point
+    G points per student
+    H points per percentage points
+    
+    points
+    
+(b) What are the units of the coefficient 12.29?
+    A points
+    B dollars
+    C students
+    D dollars per student
+    E points per dollar
+    F students per point
+    G points per student
+    
+    points per dollar
+    
+(c) What are the units of the coefficient 2.85?
+    A points
+    B dollars
+    C percentage points
+    D points per dollar
+    E students per point
+    F points per student
+    G points per percentage points
+    
+    points per percentage point
+
+
+## More SAT Modeling
+
+Find the model formulas explaining `math` SAT scores using first `salary`, then `frac`, then both, and then include an interaction term.
+
+What do your more sophisticated models tell you that you couldn't see in the simple models?
+```{r}
+Rail = RailTrail
+```
+
+
+## Rail Trail modeling
+`RailTrail` is a collection of data of trail use for 90 days. It is A data frame with 90 observations on the following variables.
+
+hightemp daily high temperature (in degrees Fahrenheit)
+lowtemp daily low temperature (in degrees Fahrenheit)
+avgtemp average of daily low and daily high temperature (in degrees Fahrenheit)
+spring indicator of whether the season was Spring
+summer indicator of whether the season was Summer
+fall indicator of whether the season was Fall
+cloudcover measure of cloud cover (in oktas)
+precip measure of precipitation (in inches)
+volume estimated number of trail users that day (number of breaks recorded)
+weekday logical indicator of whether the day was a non-holiday weekday
+dayType one of "weekday" or "weekend"
+
+What explanatory variables would you use to explain the variation of the response variable `volume`? 
+
+weekday and precip
+
+Create 4 models to explain the variation of the number of rail trail users. 
+ * A model with one categorical explanatory variable
+ * A model with one numeric explanatory variable
+ * A model with both a categorical and a numeric explanatory variable
+ * A model that you think best explains the data.
+
+```{r}
+mod1 = lm(volume ~ weekday, data = Rail)
+mod2 = lm(volume ~ avgtemp, data = Rail)
+mod3 = lm(volume ~ fall + cloudcover, data = Rail)
+mod4 = lm(volume ~ avgtemp + weekday, data = Rail)
+summary(mod1)
+summary(mod2)
+summary(mod3)
+summary(mod4)
+```
+

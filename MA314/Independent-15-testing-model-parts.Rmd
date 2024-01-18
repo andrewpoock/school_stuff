@@ -1,0 +1,291 @@
+---
+title: "15-testing-model-parts"
+output: html_notebook
+---
+# Testing parts of models
+
+```{r include = FALSE}
+library(mosaic)
+options(width = 100)
+```
+
+```{r, message = FALSE}
+require(mosaic) # mosaic operators and data used in this section
+```
+
+
+The basic software for hypothesis testing on parts of models involves the familiar `lm()` and `summary()` operators for generating the
+regression report and the `anova()` operator for generating an
+**ANOVA**   report on a model.
+
+## ANOVA reports
+
+The `anova` operator takes a model as an argument and produces
+the term-by term `ANOVA` report.  To illustrate, consider this model
+of wages from the Current Population Survey data.  
+
+```{r}
+Cps <-  CPS85 # from mosaicData
+mod1 <-  lm( wage ~ married + age + educ, data = Cps)
+anova(mod1)
+```
+
+Note the small p-value on the `married` term: `0.0097`.
+
+To change the order of the terms in the report, you can create a new
+model with the explanatory terms listed in a different order.  For
+example, here's the `ANOVA` on the same model, but with `married`
+last instead of first:
+```{r}
+mod2 <- lm( wage ~ age + educ + married, data = Cps)
+anova(mod2)
+```
+
+Now the p-value on `married` is large.  This suggests that much of
+the variation in `wage` that is associated with `married` can
+also be accounted for by `age` and `educ` instead.
+
+
+## Non-Parametric Statistics
+
+Consider the model of world-record swimming times plotted on page 116.
+
+
+It shows pretty clearly the
+interaction between `year` and `sex`.
+
+It's easy to confirm that this interaction term is statistically significant:
+
+```{r}
+Swim <-  SwimRecords  # in mosaicData
+anova( lm( time ~ year * sex, data = Swim) )
+```
+
+The p-value on the interaction term is very small: $2.8 \times10^{-6}$.
+
+To check whether this result might be influenced by the shape of the
+distribution of the `time` or `year` data, you can conduct a
+non-parametric test.  Simply take the rank of each quantitative variable:
+
+```{r}
+mod <- lm( rank(time) ~ rank(year) * sex, data = Swim)
+anova(mod)
+```
+
+With the rank-transformed data, the p-value on the interaction term is
+much larger: no evidence for an interaction between
+`year` and `sex`.  You can see this directly in  a plot of the data
+after rank-transforming `time`:
+
+```{r}
+xyplot( rank(time) ~ year, groups = sex, data = Swim)
+```
+
+The rank-transformed data suggest that women's records are improving
+in about the same way as men's. 
+That is, new records are set by women at a rate similar to the rate
+at which men set them.
+
+
+# Homework
+
+### Problem 1
+
+I’m interested in studying the length of gestation as a function of the ages of the mother and the father. In the gestation data set, ( gestation.csv ) the variable age records the mother’s age in years, and dage gives the father’s age in years. The variable gestation is the length of the gestation in days. I hypothesize that the older the mother and father, the shorter the gestational period. So, I fit a model to those 599 cases where all the relevant data were recorded:
+```{r}
+summary(lm( gestation ~ age+dage, data=Gestation))
+```
+
+  1. Describe in everyday language the relationship between age and gestation indicated by this model.
+  the p value is small, but not significantly small, so there may be a small relationship between age and gestation
+
+2. I note that the two p-values are nothing great. But I wonder whether if I treated mother’s and father’s age together — lumping them together into a single term with two degrees of freedom — I might not get something significant. Using the ANOVA reports given below, explain how you might come up with a single p-value summarizing the joint contribution of mother’s and father’s age.
+
+Insofar as you can, try to calculate the p-value itself.
+
+```{r}
+anova( lm(gestation ~ age*dage, data=Gestation))
+```
+
+```{r}
+anova( lm( gestation ~ dage+age, data=Gestation))
+```
+
+### Problem 2
+
+In conducting a hypothesis test, we need to specify two things:
+
+  • A Null Hypothesis
+  • A Test Statistic
+
+The numerical output of a hypothesis test is a p-value.
+
+In modeling, a sensible Null Hypothesis is that one or more explanatory variables are unrelated to the response variable. We can simulate a situation in which this Null applies by shuffling the variables. For example, here are two trials of a simulation of the Null in a model of the kidsfeet data:
+
+```{r}
+kids = KidsFeet
+lm( width ~ length + shuffle(sex), data=kids)
+```
+
+The test statistic summarizes the situation. There are several possibilities, but here we will use \(R^2\) from the model since this gives an indication of the quality of the model.
+
+```{r}
+rsquared(lm( width ~ length + shuffle(sex), data=kids))
+```
+
+```{r}
+rsquared(lm( width ~ length + shuffle(sex), data=kids))
+```
+
+```{r}
+rsquared(lm( width ~ length + shuffle(sex), data=kids))
+```
+
+By computing many such trials, we construct the sampling distribution under the Null — that is, the sampling distribution of the test statistic in the world in which the Null holds true. We can automate this process using do:
+
+```{r}
+samps = do(1000) * rsquared(lm( width ~ length + shuffle(sex), data=kids))
+```
+
+Finally, to compute the p-value, we need to compute the test statistic on the model fitted to the actual data, not on the simulation.
+
+```{r}
+rsquared( lm( width ~ length + sex, data=kids))
+```
+
+The p-value is the probability of seeing a value of the test statistic from the Null Hypothesis simulation that is more extreme than our actual value. The meaning of “more extreme” depends on what the test statistic is. In this example, since a
+better fitting model will always have a larger \(R^2\) we check the probability of getting a larger  \(R^2\) squares from our simulation than from the actual data.
+
+```{r}
+table( samps >= 0.4595428)
+```
+
+Our p-value is about 9%.
+
+Here are various computer modeling statements that implement possible Null Hypotheses. Connect each computer statement to the corresponding Null.
+
+    1. lm(width ~ length + shuffle(sex),data=kids)
+    2. lm(width ~ shuffle(length) + shuffle(sex), data=kids)
+    3. lm(width ~ shuffle(length), data=kids)
+    4. lm(width ~ shuffle(sex), data=kids)
+    5. lm(width ~ length + sex, data=shuffle(kids))
+
+  • Foot width is unrelated to foot length or to sex.
+      
+      5
+  
+  • Foot width is unrelated to sex, but it is related to foot length.
+      
+      1
+      
+  • Foot width is unrelated to sex, and we won’t consider any possible relationship to foot length.
+     
+      4
+  
+  • Foot width is unrelated to foot length, and we won’t consider any possible relationship to sex.
+     
+      3
+  
+  • This isn’t a hypothesis test; the randomization won’t change anything from the original data.
+     
+      2
+  
+  
+  ### Problem 3
+  
+  P-values concern the “statistical significance” of evidence for a relationship. This can be a different thing from the realworld importance of the observed relationship. It’s possible for a weak connection to be strongly statistically significant (if there is a lot of data for it) and for a strong relationship to lack statistical significance (if there is not much data).
+  
+Consider the data on the times it took runners to complete the Cherry Blossom ten-mile race in March 2005:
+
+```{r}
+run = TenMileRace
+names(run)
+```
+
+Consider the net variable, which gives the time it took the runners to get from the start line to the finish line.
+
+Answer each of the following questions, giving both a quantitative argument and also an everyday English explanation. Assessing statistical significance is a technical matter, but to interpret the substance of a relationship, you will have to put it in a real-world context.
+
+  1. What is the relationship between net running time and the runner’s age? Is the relationship significant? Is it substantial?
+  
+```{r}
+anova(lm(net ~ shuffle(age), data = run))
+```
+  
+  
+  2. What is the relationship between net running time and the runner’s sex? Is the relationship significant? Is it substantial?
+  
+```{r}
+anova(lm(net ~ shuffle(sex), data = run))
+```
+  
+
+  3. Is there an interaction between sex and age? Is the relationship significant? Is it substantial?
+  
+```{r}
+anova(lm(age ~ shuffle(sex), data = run))
+```
+  
+
+### Problem 4
+
+Often we are interested in whether two groups are different.
+
+For example, we might ask if girls have a different mean footlength than do boys. We can answer this question by constructing a suitable model.
+
+
+```{r}
+kids = KidsFeet
+summary(lm( width ~ length + shuffle(sex), data=kids))
+```
+
+Interpret this report, keeping in mind that the foot length is reported in centimeters. (The reported value <2e-16 means p < 2 × 10−16.)
+
+  1. What is the point estimate of the difference between the lengths of boys and girls feet.
+  
+    A Girls’ feet are, on average, 25 centimeters long.
+    B Girls’ feet are 0.4079 cm shorter than boys’.
+    C Girls’ feet are 0.7839 cm shorter than boys’.
+    D Girls’ feet are 1.922 cm shorter than boys’.
+    
+    B
+
+  2. The confidence interval can be written as a point estimate plus-or-minus a margin of error: P ± M. What is the 95% margin of error, M, on the difference between boy’s and girl’s foot lengths. 
+
+   .28
+    
+  3. What is the Null Hypothesis being tested by the reported p-value 0.0623?
+
+    A Boys’ feet are, on average, longer than girls’ feet.
+    B Girls’ feet are, on average, shorter than boys’ feet.
+    C All boys’ feet are longer than all girls’ feet.
+    D No girl’s foot is shorter than all boys’ feet.
+    E There is no difference, on average, between boys’ footlengths and girls’ footlengths.
+    
+    E
+
+  4. What is the Null Hypothesis being tested by the p-value on the intercept?
+
+    A Boys’ and girls’ feet are, on average, the same length
+    B The length of kids’ feet is, on average, zero.
+    C The length of boys’ feet is, on average, zero.
+    D The length of girls’ feet is, on average, zero.
+    E Girls' and boys' feet don't intercept.
+    
+    B
+
+Here is the report from a related, but slightly different model:
+```{r}
+summary( lm( length~sex-1, data=kids ))
+```
+
+Note that the p-values for both coefficients are practically zero, p < 2 × 10−16.
+
+  What is the Null Hypothesis tested by the p-value on sexG?
+
+    A Girls’ feet have a different length, on average, than boys’.
+    B Girls’ feet are no different in length, on average, than boys’.
+    C Girls’ footlengths are, on average, zero.
+    D Girls’ footlengths are, on average, greater than zero.
+    
+    B

@@ -1,0 +1,145 @@
+---
+title: "Playing with Data 2"
+output: html_notebook
+---
+# Practice with Data
+
+The CORGIS Dataset Project (The Collection of Really Great, Interesting, Situated Datasets) allows us to download clean data sets on a wide variety of topics. For example, if you use 
+`url = https://think.cs.vt.edu/corgis/datasets/csv/cars/cars.csv`
+You get a dataset about cars and how much fuel they use. Equally important, if you go to `https://think.cs.vt.edu/corgis/csv/cars/`, there is a list of Key Descriptions that tells you what each variable is. This is very important to the development of a good statistical model.
+
+One of the reasons for using a notebook like this is to document your work. Think of it as the equivalent of a science lab book. Another educated reader should be able to take your notebook and recreate your work and get the same results that you got. This is why it is so important to be able to manipulate all your data from within `R` and not export it to something like Excel. 
+
+# Describing Variation
+
+```{r include = FALSE}
+library(mosaic)
+```
+
+
+As a setting to illustrate computer techniques for describing variability, take the cars data collected on cars and how much fuel they use. You can find more information about this dataset at <https://think.cs.vt.edu/corgis/csv/cars/>
+
+```{r}
+require(mosaic)
+url = "https://think.cs.vt.edu/corgis/datasets/csv/cars/cars.csv"
+Cars = read.csv(url)
+str(Cars)
+```
+
+The command `str` gives you information about the structure of your dataset. 
+
+## Simple Statistical Calculations
+
+Calculate the mean, median, standard deviaiton, and variance of the Fuel Information for both Highway and City driving. 
+```{r}
+# [Always a space on both sides of an operator]
+mean( ~ Fuel.Information.Highway.mpg, data = Cars)
+median( ~ Fuel.Information.Highway.mpg, data = Cars)
+sd( ~ Fuel.Information.Highway.mpg, data = Cars)
+var( ~ Fuel.Information.Highway.mpg, data = Cars)
+
+mean( ~ Fuel.Information.City.mpg, data = Cars)
+median( ~ Fuel.Information.City.mpg, data = Cars)
+sd( ~ Fuel.Information.City.mpg, data = Cars)
+var( ~ Fuel.Information.City.mpg, data = Cars)
+```
+
+Notice that the variance function `var()` returns the square of the standard deviation produced by `sd()`. Having both is merely a convenience.
+
+
+
+A percentile tells where a given value falls in a distribution.  For example, a fuel consumption of 32 mpg is what percentage of the Highway Fuel Efficiency?
+```{r}
+pdata( ~ Fuel.Information.Highway.mpg, 32, data = Cars)
+```
+
+What does this mean in terms of fuel efficiency?
+
+
+A quantile refers to the same sort of calculation, but inverted.  Instead of giving a value in the same units as the distribution, you give a probability: a number between 0 and 1.  The `qdata` operator then calculates the value whose percentile would be that value.  What's the 20th percentile of City fuel efficiency?
+```{r}
+qdata( ~ Fuel.Information.City.mpg, 0.2, data = Cars)
+```
+Remember that the probability is given as a number between 0 and 1, so use 0.50 to indicate that you want the value which falls at the 50th percentile.
+
+
+## Simple Statistical Graphics
+
+There are several basic types of statistical graphics to display
+the distribution of a variable: histograms, density plots, and
+boxplots.  These are easily mastered by example. 
+
+### Histograms and Distributions
+
+Constructing a histogram involves dividing the range of a variable up
+into bins and counting how many cases fall into each bin.  This is
+done in an almost entirely automatic way. What is the following code creating for you?
+```{r}
+histogram( ~ Fuel.Information.Highway.mpg, data = Cars)
+```
+
+Modify the above code to label the horizonal and vertical axis. Add a title.
+```{r}
+histogram( ~ Fuel.Information.Highway.mpg, data = Cars, xlab = "Highway Fuel MPG", ylab = "Number of cases", main = "Histogram")
+```
+
+
+
+### Density Plots
+
+A density plot avoids the need to create bins and plots out
+the distribution as a continuous curve.  Making a density plot
+involves two operators.  The density operator performs the
+basic computation which is then displayed using either the `plot`
+or the `lines` operator.  Create a denisty plot of the City fuel efficiency.
+```{r}
+densityplot( ~ Fuel.Information.City.mpg, data = Cars, plot.points = FALSE) 
+```
+
+
+
+### Box-and-Whisker Plots
+
+Box-and-whisker plots are made with the `bwplot` command:
+```{r}
+bwplot( ~ Fuel.Information.City.mpg, data = Cars)
+```
+
+Create a box-and-whisker plot for the fuel efficiency explained by Transmission type.
+
+```{r}
+bwplot(Fuel.Information.City.mpg ~ Engine.Information.Transmission, data = Cars)
+```
+
+# Groupwise Models
+
+The UNAIDS Organization is an entity of the United Nations that looks to reduce the transmission of AIDS and provide resources to those currently affected by the disease. The following data set contains information on the number of those affected by the disease, new cases of the disease being reported, and AIDS-related deaths for a large set of countries over the course of 1990 - 2015. You can find the data at <https://think.cs.vt.edu/corgis/csv/aids/>.
+
+
+Load the data from the website into a dataset called `AIDS`
+```{r}
+url = "https://think.cs.vt.edu/corgis/datasets/csv/aids/aids.csv"
+AIDS = read.csv(url)
+names(AIDS)
+```
+
+Find the mean number of total people living with HIV
+```{r}
+mean(~Data.People.Living.with.HIV.Total, data = AIDS)
+```
+
+Find the mean number of total people living with HIV broken down by country.
+```{r}
+mod <- lm( Data.People.Living.with.HIV.Total ~ Country, data = AIDS)
+mod
+```
+
+The `var()` function will calculate the variance:
+
+```{r}
+var( AIDS$Data.People.Living.with.HIV.Total )  # overall variation
+var( fitted(mod, AIDS) ) # variation in model values
+var( resid(mod) ) # residual variation
+```
+
+Notice the "model triangle" relationship between these three numbers.

@@ -1,0 +1,88 @@
+---
+title: "MA 314 Project 2"
+output: html_notebook
+---
+```{r include = FALSE}
+library(mosaic)
+require(mosaic)
+options(width = 100)
+```
+
+# Load your dataset into the notebook
+
+What are the variables? What type of data is in each variable? What are the units of each variable? See if you can find a data dictionary for your data set and copy it into this notebook.
+
+```{r}
+IM <- read.csv("Ironman_World_Championship_2019.csv")
+NEWIM <- replace(IM, IM=='', NA)
+NEWIM <- na.omit(NEWIM)
+head(NEWIM, 5)
+```
+
+## Dictionary
+
+# What question do you want to ask about your data?
+
+What is your response variable? What do you think would be good explanatory variables? Why is this so?
+
+How does IronMan time vary based on gender, country, and division?
+
+# Create a subset of 100 random data points
+```{r}
+subdata <- sample(NEWIM, 100)
+
+# convert overall time value to time in minutes
+time_to_minutes <- function(time_str) {
+  time_parts <- unlist(strsplit(time_str, ":"))
+  hours <- as.numeric(time_parts[1])
+  minutes <- as.numeric(time_parts[2])
+  seconds <- as.numeric(time_parts[3])
+  time_in_minutes <- (hours * 60) + minutes + (seconds / 60)
+  return(time_in_minutes)
+}
+subdata$Overall <- sapply(subdata$Overall, time_to_minutes)
+
+head(subdata, 5)
+```
+
+Use this subset to create several models designed to answer your question. At least one model should have only one explanatory variable. Create at least one set of nested models. Create at least one model with covariates that you want to control for.
+
+```{r}
+mod <- lm(Overall ~ Gender, data = subdata)
+summary(mod)
+mod2 <- lm(Overall ~ Gender + Division, data = subdata)
+summary(mod2)
+mod3 <- lm(Overall ~ Gender * Division, data = subdata)
+summary(mod3)
+mod4 <- lm(Overall ~ Gender + Division + Country, data = subdata)
+summary(mod4)
+```
+
+For each model look at the following:
+
+## $R^2$
+```{r}
+summary(mod)$r.squared
+summary(mod2)$r.squared
+summary(mod3)$r.squared
+summary(mod4)$r.squared
+```
+
+Explain what $R^2$ says for each of your models.
+
+The first model is not very strongly correlated. The nested models have the same r squared value which explains a little under half of the data. The final model explains 65% of the data, better than the other models but still not great
+
+## Confidenence Intervals
+
+Calculate 95% Confidence Intervals for each of your variable coefficients.
+
+```{r}
+confint(mod)
+confint(mod2)
+confint(mod3)
+confint(mod4)
+```
+
+Can you use the Standard Errors for your nested models to find variables with higher degrees of col-linearity?
+
+The Standard errors in the nested models look to all be pretty close to eachother between 100-145 so no variable seems to have significantly higher col-linearity

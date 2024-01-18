@@ -1,0 +1,27 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(mosaic)
+require(mosaic)
+require(mosaicData)
+
+mod1 = lm(delay ~ age + race, data = Marriage)
+coef(mod1)
+
+head(fitted(mod1))
+
+mean(fitted(mod1))
+var(resid(mod1))
+sd(resid(mod1))
+summary(resid(mod1))
+
+sum(Marriage$delay^2)
+sum(fitted(mod1)^2)
+sum(resid(mod1)^2)
+
+sum(resid(mod1))
+sum(resid(mod1)^2)
+```

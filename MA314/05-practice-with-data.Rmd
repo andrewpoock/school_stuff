@@ -1,0 +1,47 @@
+---
+title: "Practice with Data 1"
+output: html_notebook
+---
+
+# Practice with Data
+
+First we load the Fall and Winter 2023 course enrollment data. This data came from https://winnet.wartburg.edu/coursefinder/ on September 19, 2023 and was cleaned using Google Docs where your professor learned about the miraculous function *SPLIT*. The csv files were then loaded into github so that you can access them.
+
+```{r}
+fallurl = "https://raw.githubusercontent.com/mbirgen/MA314/main/WartburgData%20-%20Fall%202023.csv"
+Fall = read.csv(fallurl, header = TRUE, stringsAsFactors = T)
+```
+
+```{r}
+winterurl = "https://raw.githubusercontent.com/mbirgen/MA314/main/WartburgData%20-%20Winter%202024.csv"
+Winter = read.csv(winterurl, header = TRUE, stringsAsFactors = T)
+```
+
+What questions could you ask about the data? What might you want to know? You could ask about course sizes, course sizes by department, course enrollment by professor, course size by time.  This is your chance to play with the data and see what you can come up with.
+
+Today's assignment is to ask a question, create a graphic that illustrates your question, and see what answers you can come up with.
+
+# Student Work
+To insert a code chunk, in Windows the command is Alt-Cmnd-I
+
+```{r}
+require(mosaic)
+#Fall = Fall [,-15]
+#Winter = Winter [,-15]
+#YearData = rbind(Fall, Winter)
+
+cat("Fall Data\n")
+
+cat("\nPercent of classes per department:\n")
+tally(~Department, data = Fall)/nrow(Fall)*100
+
+cat("\nNumber of classes per professor:\n")
+tally(~Name, data = Fall)
+
+cat("\nAverage classes per professor:\n")
+mean(tally(~Name, data = Fall))
+
+cat("\nAverage class size:\n")
+mean(tally(~ENR, data = Fall))
+```
+

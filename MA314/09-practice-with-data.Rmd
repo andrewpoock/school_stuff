@@ -1,0 +1,155 @@
+---
+title: "Chapter 9: Practice with Data"
+output: html_notebook
+---
+
+```{r}
+library(mosaic)
+require(mosaic)
+require(mosaicData)
+```
+# Homework
+
+### Thinking Problem 1
+
+For each of the following pairs of models, mark the statement
+that is most correct.
+
+### Part 1
+
+Model 1 . `A ~ B+C`
+Model 2 . `A ~ B*C`
+
+  A Model 1 is nested in Model 2.
+  
+  B Model 2 is nested in Model 1.
+  
+  C The two models are the same.
+  
+  D None of the above is true.
+  
+  A
+
+### Part 2
+
+Model 1 . `A ~ B`
+Model 2 . `B ~ A`
+
+  A Model 1 is nested in Model 2.
+
+  B Model 2 is nested in Model 1.
+
+  C The two models are the same.
+
+  D None of the above is true.
+  
+  D
+
+### Part 3
+
+Model 1 . `A ~ B + C`
+Model 2 . `B ~ A * C`
+
+  A Model 1 is nested in Model 2.
+
+  B Model 2 is nested in Model 1.
+
+  C The two models are the same.
+
+  D None of the above is true.
+  
+  D
+
+### Part 4
+
+Model 1 . `A ~ B + C + B:C`
+Model 2 . `A ~ B * C`
+
+  A Model 1 is nested in Model 2.
+
+  B Model 2 is nested in Model 1.
+
+  C The two models are the same.
+
+  D None of the above is true.
+  
+  C
+  
+## Thinking Problem 2
+
+For each of the following pairs of models, mark the statement that is most correct.
+
+### Part 1
+
+Model 1 . `A ~ B+C`
+Model 2 . `A ~ B*C`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  B
+
+### Part 2
+
+Model 1 . `A ~ B + C`
+Model 2 . `B ~ A * C`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  D
+
+### Part 3
+
+Model 1 . `A ~ B + C + B:C`
+Model 2 . `A ~ B * C`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  C
+
+[From a suggestion by a student]
+
+## Going further
+
+In answering this question, you might want to try out a few examples using real data: just pick two quantitative variables to stand in for `A` and `B`.
+What will be the relationship between R2 for the following two models?
+
+Model 1 . `A ~ B`
+Model 2 . `B ~ A`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  D
+
+## Application Problem 
+
+Choose one of the models that you have created for an assignment in class. Calculate its \(R^2\) value and, if it is a simple linear model, its correlation coefficient. Write a sentence that explains in the language of the data what \(R^2\) is telling you about the model.
+```{r}
+mod <- lm(age ~ prevcount, data = Marriage)
+rsquared(mod)
+sqrt(rsquared(mod))
+```
+an r squared value of .27 indicates that the variables are not very strongly related. the age of the person is not very well explained by the number of previous marriages of the person

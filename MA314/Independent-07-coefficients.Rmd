@@ -1,0 +1,177 @@
+---
+title: "Chapter 7: Coefficients"
+output: html_notebook
+---
+# Model formulas and coefficients
+
+```{r include = FALSE}
+library(mosaic)
+options(width = 100)
+```
+
+Make sure **`mosaic`** is loaded.
+
+```{r, echo=FALSE, message = FALSE}
+require(mosaic)
+```
+ 
+## Examining model coefficients 
+ 
+`r detex_index_entry('P', 'lm@lm')` 
+`r detex_index_entry('P', 'Modeling!lm@lm')` 
+`r detex_index_entry('C', 'coefficients!computing best fitting')`
+ 
+ 
+ 
+The `lm()` operator finds model coefficients. `lm` stands for linear model. To illustrate, here's a pair of statements that read in a data frame and fit a model to it:
+```{r}
+mod <- lm( time ~ year + sex, data = SwimRecords) 
+```
+The first argument to `lm` is a model design, the second is the data frame.
+
+`r detex_index_entry('P', 'coef@coef')` 
+`r detex_index_entry('P', 'Modeling!coef@coef')` 
+
+The object  created by `lm` --- here given the name `mod` --- contains a variety of
+information about the model.
+To access the coefficients themselves, use the `coef()`
+operator applied to the model:
+```{r}
+coef(mod)
+```
+
+As shorthand to display the coefficients, just type the
+name of the object that is storing the model:
+```{r}
+mod
+```
+
+`r detex_index_entry('P', 'summary@summary!for lm')` 
+`r detex_index_entry('P', 'Modeling@regression report with summary')` 
+`r detex_index_entry('P', 'Regression report with summary')` 
+`r detex_index_entry('C', 'regression report!computing')` 
+
+A more detailed report can be gotten with the `summary`
+operator. This gives additional statistical information
+that will be used in later chapters:
+```{r}
+summary(mod)
+```
+
+`r detex_index_entry('C', 'model value!calculating')` 
+
+From time to time in the exercises, you will be asked to calculate
+model values "by hand."  This is accomplished by multiplying
+the coefficients by the appropriate values and adding them up.  For
+example, the model value for a male swimmer in 2010 would be:
+```{r}
+555.7 - 0.2515*2010 - 9.798
+```
+
+Notice that the "value" used to multiply the intercept is always 1,
+and the "value" used for a categorical level is either 0 or 1
+depending on whether there is a match with the level.  In this example,
+since the swimmer in question was male, the value of `sex M` is 1.
+If the swimmer had been female, the value for
+`sex M` would have been 0.
+
+When a model includes interaction terms, the interaction coefficients
+need to be multiplied by all the values involved in the interaction.
+For example, here is a model with an interaction between `year` and
+`sex`:
+
+`r detex_index_entry('C', 'interaction term!computing model values')` 
+```{r}
+mod2 <- lm( time ~ year * sex, data = SwimRecords)
+coef(mod2)
+```
+```{r}
+697.3 - 0.3240*2010 - 302.5 + 0.1499*2010
+```
+
+The `year:sexM` coefficient is being multiplied by the year
+(2010) and the value of `sex M`, which is 1 for this
+male swimmer.
+
+## Other Useful Operators
+
+<!-- begin description -->
+
+
+`r detex_index_entry('P', 'cross@cross*')` 
+`r detex_index_entry('P', 'Data!cross@cross*')` 
+`r detex_index_entry('C', 'crossing categorical variables')` 
+`r detex_index_entry('C', 'categorical variable!crossing')` 
+1. `cross()` will combine two categorical variables into a single
+  variable.  For example, in the Current Population Survey data, the
+  variable `sex` has levels F and M, while the variable `race`
+  has levels W and NW.  Crossing the two variables combines them; the
+  new variable has four levels: F.NW, M.NW, F.W, M.W:
+  
+```{r}
+CPS <- CPS85  # from mosaicData
+RaceSex <- cross(CPS$sex, CPS$race)
+summary(RaceSex)
+```
+
+The summary tells us that there are 28 non-white females, 270 white females, etc, in the new categorical variable called RaceSex.
+
+`r detex_index_entry('P', 'as.factor@as.factor')` 
+`r detex_index_entry('P', 'Data!as.factor@as.factor')` 
+`r detex_index_entry('C', 'categorical variable!from quantitative')` 
+`r detex_index_entry('C', 'quantitative variable!to categorical')` 
+
+2. `as.factor()` will convert a quantitative variable to a categorical
+  variable.  This is useful when a quantity like `month` has been
+  coded as a number, say 1 for January and 2 for February, etc.
+  but you do not want models to treat it as such.
+
+  To illustrate, consider two different models of the usage
+  temperature versus month:
+```{r}
+utils <- read.csv("http://tiny.cc/mosaic/utilities.csv")
+mod1 <- lm( temp ~ month, data = utils)
+mod2 <- lm( temp ~ as.factor(month), data = utils)
+```
+
+Here are the graphs of those models:
+
+```{r}
+xyplot(temp + fitted(mod1) ~ month, data = utils)
+```
+
+
+```{r}
+xyplot( temp + fitted(mod2) ~ month, data = utils )
+```
+
+<!-- 
+
+utils <- read.csv("/users/kaplan/kaplanfiles/sbook/datasets/utilities.csv")
+mod1 <- lm( temp ~ month, data = utils)
+xyplot( temp ~ month, data = utils, main = "Model 1")
+trellis.focus()
+x <- seq(1,12)
+y <- 39.04 + 1.63*x
+llines(x,y,col = 'red',lwd = 3)
+trellis.unfocus()
+
+mod2 <- lm( temp ~ as.factor(month)-1, data = utils)
+x <- 1:12
+y <- as.numeric( coefficients(mod2))
+xyplot( temp ~ month, data = utils, main = "Model 2")
+trellis.focus()
+llines(  x,y, lwd = 3, col = 'red')
+trellis.unfocus()
+end comment -->
+
+In the first model, month is treated quantitatively, so the model term
+`month` produces a straight-line relationship that does not
+correspond well to the data.
+
+In the second model, month is treated categorically, allowing a more
+complicated model relationship.  In fact, this is a groupwise model: the model values represent the mean temperature for each month.
+
+<!--  #. abbreviate] shortens the names of factors -->
+
+<!-- end description -->

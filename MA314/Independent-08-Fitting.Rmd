@@ -1,0 +1,146 @@
+---
+title: "Chapter 7: Coefficients"
+output: html_notebook
+---
+
+# Fitting models to data
+
+```{r include = FALSE}
+library(mosaic)
+require(mosaic)
+require(mosaicData)
+options(width = 100)
+```
+
+Using the `lm` software is largely a matter of familiarity 
+with the model design language described in Chapter \@ref("chap:language").  Computing the fitted model values and the residuals is done with the `fitted` and `resid`.  These operators take a model as an input.  To illustrate:
+
+
+
+```{r}
+Swim <- SwimRecords  # from mosaicData
+mod1 <- lm( time ~ year + sex, data = Swim)
+coef(mod1)
+```
+
+Once you have constructed the model, you can use `fitted` and
+`resid`: 
+```{r}
+modvals <- fitted(mod1)
+head(modvals)
+```
+
+
+## Sums of Squares
+
+Computations can be performed on the fitted model values and the
+residuals, just like any other quantity:
+```{r}
+mean(fitted(mod1))
+var(resid(mod1))
+sd(resid(mod1))
+summary(resid(mod1))
+```
+
+Sums of squares are very important in statistics.  Here's how to
+calculate them for the response values, the fitted model values, and
+the residuals:
+
+```{r}
+sum(Swim$time^2)
+sum(fitted(mod1)^2)
+sum(resid(mod1)^2)
+```
+
+
+The partitioning of variation by models is seen by the way 
+the sum of squares of the fitted and the residuals add up to the sum of squares of the response:
+```{r}
+227699 + 935.8
+```
+
+Don't forget the squaring stage of the operation!  The sum of the
+residuals (without squaring) 
+is very different from the sum of squares of the residuals:
+
+```{r}
+sum(resid(mod1))
+sum(resid(mod1)^2)
+```
+
+Take care in reading numbers formatted like 
+`1.849e-14`.   The notation stands for $1.849 \times 10^{-14}$.
+That number, $0.00000000000001849$, is effectively zero compared to the
+residuals themselves!
+
+
+## Redundancy
+
+The `lm` operator will automatically detect redundancy and deal
+with it by leaving the redundant terms out of the model.  
+
+To see how redundancy is handled, here is an example with a
+constructed redundant variable in the swimming data-set.  
+The following statement adds a new variable to the
+data-frame counting how many years after the end of World War II each
+record was established:
+```{r}
+Swim$afterwar <- Swim$year - 1945
+```
+
+Here is a model that doesn't involve redundancy
+```{r}
+mod1 <- lm( time ~ year + sex, data = Swim)
+coef(mod1)
+```
+
+When the redundant variable is added in, `lm` successfully
+detects the redundancy and handles it.  This is indicated by a
+coefficient of NA on the redundant variable.
+```{r}
+mod2 <- lm( time ~ year + sex + afterwar, data = Swim)
+coef(mod2)
+```
+
+In the absence of redundancy, the model coefficients don't depend on
+the order in which the model terms are specified.  But this is not the
+case when there is redundancy, since any redundancy is blamed on the
+later variables.  For instance, here `afterwar` has been put first
+in the explanatory terms, so `lm` identifies `year` as the
+redundant variable:
+```{r}
+mod3 <- lm( time ~ afterwar + year + sex, data = Swim)
+coef(mod3)
+```
+
+Even though the coefficients are different, the fitted model values
+and the residuals are exactly the same (to within computer round-off)
+regardless of the order of the
+model terms.
+```{r}
+head(fitted(mod2))
+```
+
+```{r}
+head(fitted(mod3))
+```
+
+Note that whenever you use a categorical variable and an intercept
+term in a model, there is a redundancy.  This is not shown explicitly.
+For example, here is a model with no intercept term, and both levels
+of the categorical variable `sex` show up with coefficients:
+```{r}
+mod <- lm( time ~ sex - 1, data = Swim)
+coef(mod)
+```
+
+If the intercept term is included (as it is by default unless
+`-1` is used in the model formula), one of the levels is simply
+dropped in the report:
+
+```{r}
+mod <- lm( time ~ sex, data = Swim)
+coef(mod)
+```
+Remember that this coefficient report implicitly involves a redundancy.   
+

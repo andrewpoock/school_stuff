@@ -1,0 +1,168 @@
+---
+title: "Chapter 10 Total and Partial"
+output: html_notebook
+---
+# Total and partial relationships
+
+```{r include = FALSE}
+library(mosaic)
+options(width = 100)
+```
+
+
+## Adjustment
+
+
+There are two basic approaches to adjusting for covariates.
+Conceptually, the simplest one is to hold the covariates constant at
+some level when collecting data or by extracting a subset of data
+which holds those covariates constant.  The other approach is to
+include the covariates in your models.
+
+For example, suppose you want
+to study the differences in the wages of male and females.  The very
+simple model `wage` ~ `sex` might give some insight, but
+it attributes to `sex` effects that might actually be due to level
+of education, age, or the sector of the economy in which the person
+works.  Here's the result from the simple model:
+
+```{r}
+Cps <- CPS85
+mod0 <- lm( wage ~ sex, data = Cps)
+summary(mod0)
+```
+The coefficients indicate that a typical male makes \$2.12 more per
+hour than a typical female.  (Notice that $R^2 = 0.0422$ is very small:
+`sex` explains hardly any of the person-to-person variability in wage.)
+
+By including the variables `age`, `educ`, and `sector` in the
+model, you can adjust for these variables:
+```{r}
+mod1 <- lm( wage ~ age + sex + educ + sector, data = Cps)
+summary(mod1)
+```
+The adjusted difference between the sexes is \$1.94 per hour.  (The
+$R^2=0.30$ from this model is considerably larger than for `mod0`,
+but still a lot of the person-to-person variation in wages has not
+be captured.)
+
+It would be wrong to claim that simply including a covariate in a
+model guarantees that an appropriate adjustment has been made.  The
+effectiveness of the adjustment depends on whether the model design is
+appropriate, for instance whether appropriate interaction terms have
+been included.  However, it's certainly the case that if you **don't**
+include the covariate in the model, you have **not** adjusted for
+it.
+
+The other approach is to subsample the data so that the levels of the
+covariates are approximately constant.  For example, here is a subset
+that considers workers between the ages of 30 and 35 with between 10
+to 12 years of education and working in the sales sector of the
+economy:
+```{r}
+small <- subset(Cps, age <=35 & age >= 30 & 
+                       educ>=10 & educ <=12 & 
+                       sector=="sales" )
+```
+
+The choice of these particular levels of `age`, `educ`, and
+`sector` is arbitrary, but you need to choose some level if you
+want to hold the covariates appproximately constant.
+
+The subset of the data can be used to fit a simple model:
+```{r}
+mod4 <- lm( wage ~ sex, data = small)
+summary(mod4)
+```
+
+At first glance, there might seem to be nothing wrong with this
+approach and, indeed, for very large data sets it can be effective.
+In this case, however, there are only 3 cases that satisfy the various
+criteria: two women and one man.
+```{r}
+table( small$sex )
+```
+
+So, the \$4.50 difference between
+the sexes and wages depends entirely on the data from a single male!
+(Chapter \@ref("chap:confidence") describes how to assess the precision
+of model coefficients.  This one works out to be $4.50 \pm  11.00$ ---
+not at all precise.)
+
+# Homework Problems
+
+### Problem 1
+
+Consider the data set on kids’ feet in `kidsfeet.csv`.
+First, you’re going to look at a total change. Build a model
+of foot width as a function of foot length: `width ∼ length`. Fit
+this model to the kids’ feet data.
+According to this model, how much does the typical width
+change when the foot length is increased from 22 to 27 cm?
+```{r}
+mod <- lm(width ~ length, data = KidsFeet)
+coef(mod)
+```
+about 1.25 cm
+
+This is a total change, because it doesn't hold any other variable constant, e.g. sex. That might sound silly, since obviously a kid’s sex doesn’t change as his or her foot grows.
+But the model doesn’t know that. It happens that most of
+the kids with foot lengths near 22 cm are girls, and most of
+the kids with foot lengths near 27 cm are boys. So when you
+compare feet with lengths of 22 and 27, you are effectively
+changing the sex at the same time as you change the foot
+length.
+
+To look at a partial change, holding sex constant, you need
+to include sex in the model. A simple way to do this is 
+`width ∼ length + sex`. Using this model fitted to the kids’ feet data,
+how much does a typical foot width change if the foot length
+is increased from 22 to 27 cm?
+```{r}
+mod <- lm(width ~ length + sex, data = KidsFeet)
+coef(mod)
+```
+about 1.1 cm
+
+You can also build more detailed models, for example a model that includes an interaction term: `width ∼ length * sex`.
+Using this model fitted to the kids’ feet data, how much will a
+typical girl’s foot width change if the foot length is increased
+from 22 to 27 cm?
+```{r}
+mod <- lm(width ~ length * sex, data = KidsFeet)
+coef(mod)
+```
+about 1.13 cm
+
+
+### Problem 2
+
+Consider two models that you are to fit to a single data set
+involving three variables: A, B, and C.
+
+Model 1 `A ∼ B`
+Model 2 `A ∼ B + C`
+
+(a) When should you say that Simpson’s Paradox is occurring?
+
+A When Model 2 has a lower R2 than Model 1.
+
+B When Model 1 has a lower R2 than Model 2.
+
+C When the coef. on B in Model 2 has the opposite sign to the coef. on B in Model 1.
+
+D When the coef. on C in Model 2 has the opposite sign to the coef. on B in Model 1
+
+C
+
+(b) True or False: If B is uncorrelated with A, then the coefficient on B in the model `A ∼ B` must be zero.
+
+False
+
+(c) True or False: If B is uncorrelated with A, then the coefficient on B in a model `A ∼ B+C` must be zero.
+
+False
+
+(d) True or False: Simpson’s Paradox can occur if B is uncorrelated with C.
+
+True

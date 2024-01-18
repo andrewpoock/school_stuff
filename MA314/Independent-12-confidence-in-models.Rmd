@@ -1,0 +1,342 @@
+---
+title: "12-Confidence In Models"
+output: html_notebook
+---
+
+# Confidence in models
+
+
+```{r include = FALSE}
+library(mosaic)
+library(mosaicData)
+```
+
+Regression reports are generated using software you have already encountered: `lm` to fit a model and `summary` to construct the report from
+the fitted model.  To illustrate with the `SwimRecords` data from the **`mosaicData`** package:   
+
+```{r}
+mod <- lm(time ~ year + sex, data = SwimRecords)
+summary(mod)
+```
+
+
+## Confidence Intervals from Standard Errors
+
+
+Given the coefficient estimate and the standard error
+from the regression report, the confidence interval is easily generated.  
+For a 95\%  confidence interval, you just multiply the standard error by 2
+to get the margin of error.  For example, in the above, the
+margin of error on `sex M` is $2 \times 1.013 = 2.03$, or, in 
+computer notation:
+```{r}
+2 * 1.0129
+```
+
+If you want the two endpoints of the confidence interval, rather than 
+just the margin of error, do these
+simple calculations: (1) subtract the margin of error from the estimate; 
+(2) add the margin of error to the estimate.  So, 
+```{r}
+-9.798 - 2*1.0129
+-9.798 + 2*1.0129
+```
+
+The key thing is to remember the multiplier that is applied 
+to the standard error.  A multiplier of approximately 2 is for
+a 95\% confidence interval.
+
+The `confint()` function provides a convenient way to calculate
+confidence intervals directly.
+
+It calculates the exact multiplier (which depends somewhat on the
+sample size)  and applies it to the standard error to produce the confidence intervals.
+
+```{r}
+mod <- lm( time ~ year + sex, data = SwimRecords)
+confint(mod)
+```
+
+It would be convenient if the regression report included confidence
+intervals rather than the standard error.  Part of the reason it
+doesn't is historical: the desire to connect to the traditional by-hand calculations.
+
+
+
+## Bootstrapping Confidence Intervals
+
+Confidence intervals on model coefficients can be computed using the
+same bootstrapping technique introduced in the Statistical Inference Chapter.
+
+Start with your fitted model. To illustrate, here is a model of world-record swimming time over the years, taking into account sex:
+```{r}
+lm( time ~ year + sex, data = SwimRecords)
+```
+These coefficients reflect one hypothetical draw from the
+population-based sampling
+distribution.  It's impossible to get another draw from the
+"population" here: the actual records are all you've got.
+
+But to approximate sampling variation, you can treat the sample as
+your population and re-sample:
+```{r}
+lm( time ~ year + sex, data = resample(SwimRecords))
+```
+
+Constructing many such re-sampling trials and collect the results 
+
+```{r}
+s = do(500) * lm( time ~ year + sex, data = resample(SwimRecords))
+head(s)
+```
+
+To find the standard error of the coefficients, just take the standard
+deviation across the re-sampling trials.  For the indicator variable `sex M`:
+```{r}
+sd(s$sexM)
+```
+
+Multiplying the standard error by 2 gives the approximate 95\% margin
+of error.  Alternatively, you can use the `confint()` function
+to calculate this for you:
+```{r}
+confint(s$sexM, method = "stderr")
+```
+
+
+
+## Prediction Confidence Intervals
+
+When a model is used to make a prediction, it's helpful to be able to
+describe how precise the prediction is.  For instance, suppose you want to use the `KidsFeet` data set (from **`mosaicData`**) to make a prediction of the foot width of a girl whose foot length is 25 cm. 
+
+First, fit your model:
+```{r}
+names(KidsFeet)
+levels(KidsFeet$sex)
+mod <- lm( width ~ length + sex, data = KidsFeet)
+```
+
+Now apply the model to the new data for which you want to make a
+prediction.  Take care to use the right coding for categorical variables.
+```{r}
+predict(mod, newdata = data.frame( length=25, sex="G" ))
+```
+
+In order to generate a confidence interval, the `predict`
+operator needs to be told what type of interval is wanted.  There are
+two types of prediction confidence intervals:
+<!-- begin description -->
+
+#. Interval on the model value which reflects the sampling
+  distributions of the coefficients themselves.  To calculate this,
+  use the `interval = "confidence"` named argument:
+```{r}
+predict(mod, newdata = data.frame( length = 25, sex = "G" ), 
+         interval = "confidence")
+```
+
+The components named `lwr` and `upr` are the lower and upper
+limits of the confidence interval, respectively. 
+
+#. Interval on the prediction which includes the variation due to
+  the uncertainty in the coefficients as well as the size of a typical
+  residual.  To find this interval, use the
+  `interval = "prediction"` named argument:
+```{r}
+predict(mod, newdata = data.frame( length = 25, sex = "G" ), 
+         interval = "prediction")
+```
+
+The prediction interval is larger than the model-value confidence
+interval because the residual always gives additional uncertainty
+around the model value. Predicting an individual's foot width, even if we
+know her sex and foot length, involves a lot more
+uncertainty than predicting the mean foot width of all individuals with these
+particular characteristics.
+<!-- end description -->  
+
+# Homework
+
+### Problem 1
+
+Look at this report from a model of the kids’ feet data,
+```{r}
+summary(lm(width~length+sex,data=KidsFeet))
+
+```
+
+  (a) Based on the output of the report, which of these statements is a correct confidence interval on the sexG coefficient?
+
+    A −.23 ± 0.13 with 95 percent confidence
+    B −.23 ± 0.13 with 50 percent confidence
+    C −.23 ± 0.13 with 68 percent confidence
+    D −.23 ± 0.0805 with 95 percent confidence
+    E −.23 ± 0.23 with 68 percent confidence
+    F None of the above
+    
+    C
+
+  (b) Based on the output of the report, which of these statements is a correct confidence interval on the length coefficient?
+  
+    A 0.22 ± 0.050 with 95 percent confidence
+    B 0.22 ± 0.050 with 68 percent confidence
+    C 0.22 ± 0.100 with 50 percent confidence
+    D 0.22 ± 0.070 with 50 percent confidence
+    E None of the above
+    
+    B
+
+### Problem 2
+
+Here are three different model statements for the kids’ feet data.
+
+• `width ∼ 1`
+• `width ∼ sex`
+• `width ∼ sex - 1`
+
+```{r}
+mod <- lm(width ~ sex-1, data= KidsFeet)
+summary(mod)
+```
+
+
+Each of the above models for kids’ feet is relevant to one of the problems below. Fit the model to the data in `kidsfeet.csv` and interpret your results to give a 95% confidence interval on these quantities written in the standard form: point estimate ± margin of error.
+
+  1. The mean width of boys’ feet.
+
+    Point estimate: 9.19
+    Margin of error: 0.155
+
+  2. The mean width of all children’s feet.
+
+    Point estimate: 8.99
+    Margin of error: 0.16
+
+  3. The difference between the means of boys’ and girls’ foot widths. (The differences can be either positive or negative, depending on whether it is boys minus girls or girls minus boys. State your difference as a positive number.)
+  
+    Point estimate: 0.406
+    Margin of error: .22
+    
+### Problem 3
+
+What’s wrong with the following statement written by a student on an exam?
+
+    The the larger the number of cases examined and taken into account, 
+    the more likely your estimation will be accurate. Having more cases 
+    decreases your risk of having a bias and increases the probability 
+    that your sample accurately represents the real world.
+    
+    A large sample does not mean there will be less bias in the model
+
+### Problem 4
+
+A confidence interval is often written as a point estimate plus or minus a margin of error: P ±M with C percent confidence. 
+How does the size of the margin of error M depend on the confidence level C?
+
+    A It doesn’t.
+    B It increases as C increases.
+    C It decreases as C increases.
+    
+    B
+
+### Problem 5
+
+In 1882, Charles Darwin wrote about earthworms and their importance in producing soil. 
+
+    Hensen, who has published so full and interesting an account of the habits of worms, calculates, from the number which he found in a measured space, that there must exist 133,000 living worms in a hectare of land, or 53,767 in an acre. — p. 161, “The Formation of Vegetable Mould, through the Action of Worms with Observations on their Habits”
+
+While 133,000 seems sensibly rounded, 53,767 is not. This
+problem investigates some of the things you can find out about
+the precision of such numbers and how to report them using
+modern notation, which wasn’t available to Darwin or his contemporaries.
+
+Background: A hectare is a metric unit of area, 10,000
+square meters. An acre is a traditional unit of measure, with
+one acre equivalent to 0.4046863 hectares. That is, an acre is
+a little less than half a hectare.
+
+The implicit precision in Hensen’s figure is 133, 000 ± 500,
+since it is rounded to the thousands place. Correctly translate
+the Hensen figure to be in worms per acre.
+
+  1. Literally translating 133,000 worms per hectare to worms per acre gives what value?
+
+    53823
+
+  2. Literally translating ±500 worms per hectare to worms per acre gives what value?
+  
+    202
+    
+  3. Which one of these reports gives a proper account for the number of worms per acre?
+
+    A 53767 ± 202
+    B 53823 ± 200
+    C 53820 ± 200
+    D 53830 ± 200
+    
+    B
+
+Of course, it’s just an assumption that Hensen’s precision
+is ±500. Imagine that the way Hensen made his estimate
+was to dig up 10 different patches of ground, each of size one
+square meter. In each patch, Hensen counted the worms found
+then added these together to get the total number of worms
+in 10 square meters. Since Hensen reported 133,000 worms
+per hectare, he would have found a total of 133 worms in the
+ten square meters he actually dug up.
+
+Of course, if Hensen had picked a different set of 10 patches
+of soil in the same field, he would likely not have found exactly 133 worms. There is some sampling variability to the number of worms found.
+
+Using an appropriate probability model for the number of
+worms to be found in 10 square meters of soil, estimate the
+standard deviation of the number found, assuming that on
+average the number is 133 per 10 square meters.
+
+  1. What is an appropriate probability model?
+
+    poisson
+
+  2. Using the appropriate probability model, what standard deviation corresponds to a mean of 133 per 10 square meters? (Hint: You can use a random number generator to make a large sample of draws and then find the standard deviation of this sample.)
+  
+```{r}
+qpois( c(0.025, 0.975), lambda = 133)
+```
+  11.5
+
+
+  3. Using your standard deviation, and recalling that the
+number of worms in one hectare will be 1000 times that
+found in 10 square meters, give an appropriate 95% confidence interval to use today in reporting Hensen’s result.
+
+    A 133, 000 ± 23000
+    B 133, 000 ± 2100
+    C 133, 000 ± 16000
+    D 133, 000 ± 20000
+    E 130, 000 ± 120000
+    
+    C
+
+  4. Now imagine, almost certainly contrary to fact, that Hensen had actually dug up an entire hectare and found 133,201 worms, and rounded this to 133,000 just for the sake of not seeming silly. Of course, this would have been a heroic effort just to gain precision on the count. 
+  
+It would also be futile, since the number in a “hectare of soil” presumably differs widely depending on the soil conditions. But if Hensen had calculated a 95% confidence interval using an appropriate probability model on the count of 133,201 worms, rather than just rounding to what seems reasonable, what would have been his
+margin of error?
+
+    16000
+
+```{r}
+m <- lm(net ~ age + sex, data = TenMileRace)
+summary(m)
+confint(m)
+rsm <- lm(net ~ age + sex, data = resample(TenMileRace))
+s = do(500) * rsm
+head(s)
+sd(s$age)
+confint(s$age, method = "stderr")
+predict(m, newdata = data.frame( age = 30, sex = "M" ), 
+         interval = "confidence")
+predict(m, newdata = data.frame( age = 30, sex = "M" ), 
+         interval = "prediction")
+```
+

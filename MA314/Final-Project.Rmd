@@ -1,0 +1,91 @@
+---
+title: "MA 314 Final Project"
+output: html_notebook
+---
+Dataset link: https://www.kaggle.com/datasets/iamsouravbanerjee/heart-attack-prediction-dataset
+
+For my final project, I found a heart attack dataset from Kaggle to study. The author is Sourav Banerjee and it was last updated about one month ago. The data covers many possible explanatory variables of patients relating to heart attack risk prediction. For my project, I chose to focus on only a few of them. The question I want to answer with this dataset is: Do a patient's age, sleep, and exercise habits influence their risk for heart disease? For each variable, I am creating a linear model and analyzing it to determine how strongly correlated it is with heart attack risk. Some possible covariates may include: family history, previous heart problems, sex, smoking, obesity, alcohol, diet, medication use, stress level, sedentary activity, income, BMI, county, continent, and hemisphere.
+
+To do this, I first downloaded and imported the dataset into R. Luckily, the data was already cleaned. You can see the first 6 rows of my data below. Then, I set a random seed and sampled my data to create train, test, and validation data. Using these samples I can test how well my model is working.
+
+```{r}
+# Import Data
+# 8,763 rows
+heart = read.csv("heart_attacks.csv")
+head(heart)
+```
+
+```{r}
+# Data Setup
+set.seed(2003)
+sample <- sample(c(TRUE, FALSE),nrow(heart),replace=TRUE,prob=c(0.7,0.3))
+train  <- heart[sample, ]
+test   <- heart[!sample, ]
+sample2 <- sample(c(TRUE, FALSE),nrow(test),replace=TRUE,prob=c(1/3,2/3))
+test <- test[sample2, ]
+validation <- test[!sample2, ]
+```
+
+Here you can see the Data Distributions of the variables I will be modeling.
+
+```{r}
+hist(heart$Age)
+table(heart$Physical.Activity.Days.Per.Week)
+table(heart$Sleep.Hours.Per.Day)
+```
+
+Below are the models I have created for each variable, the RMSE value, and predicted values of heart attack risk by putting certain values into the model
+
+```{r}
+# Age Model
+mod = lm(Heart.Attack.Risk ~ Age, data = train)
+summary(mod)
+# predict values
+pred = predict(mod, test)
+# RMSE
+sqrt(mean((pred-test$Age)^2))
+
+# predict one value
+newdata = data.frame(Age= 18)
+newdata2 = data.frame(Age= 80)
+predict(mod, newdata, type="response")
+predict(mod, newdata2, type="response")
+```
+In my dataset, this age model does not suggest that there is a correlation between age and heart attack risk. Predicted values show a less than 1% increase in heart attack risk comparing an 80 year old to an 18 year old, but the RMSE and p-values of the model are not very good.
+
+```{r}
+# Sleep Hours/Day Model
+mod = lm(Heart.Attack.Risk ~ Sleep.Hours.Per.Day, data = train)
+summary(mod)
+# predict values
+pred = predict(mod, test)
+# RMSE
+sqrt(mean((pred-test$Sleep.Hours.Per.Day)^2))
+
+# predict one value
+newdata = data.frame(Sleep.Hours.Per.Day= 5)
+newdata2 = data.frame(Sleep.Hours.Per.Day= 9)
+predict(mod, newdata, type="response")
+predict(mod, newdata2, type="response")
+```
+In my dataset, this sleep model shows a correlation between sleep hours per night and heart attack risk. The RMSE is fairly low and the p-value is less than the standard .05 mark. My model predicts that a person who sleeps a full 9 hours every night is almost 4 percent less likely to have a higher risk of heart disease than someone who sleeps 5 hours or less per night.
+
+```{r}
+# Exercise Model
+mod = lm(Heart.Attack.Risk ~ Physical.Activity.Days.Per.Week, data = train)
+summary(mod)
+# predict values
+pred = predict(mod, test)
+# RMSE
+sqrt(mean((pred-test$Physical.Activity.Days.Per.Week)^2))
+
+# predict one value
+newdata = data.frame(Physical.Activity.Days.Per.Week= 0)
+newdata2 = data.frame(Physical.Activity.Days.Per.Week= 4)
+predict(mod, newdata, type="response")
+predict(mod, newdata2, type="response")
+```
+In my data set, this exercise model does not suggest that there is a correlation between exercise hours/day and heart attack risk. The RMSE value is very low, but the p-value is somewhat high. My model predicts about a 1% decrease of heart disease risk in people that exercise 4 days per week than people that don't exercise.
+
+
+In conclusion, my model found statistically significant evidence that sleeping less is correlated with higher risk of heart attacks. There was not significant evidence for exercise habits or age being correlated to increased risk of heart attack based on my model, however, the model still predicts higher risk percentages if the patient is older and exercises less which is what we would expect.

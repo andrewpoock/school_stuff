@@ -1,0 +1,212 @@
+---
+title: "09-Partitioning"
+output: html_notebook
+---
+
+# Correlation and partitioning of variation
+
+```{r include = FALSE}
+library(mosaic)
+require(mosaic)
+require(mosaicData)
+options(width = 100)
+```
+
+The coefficient of determination, $R^2$, 
+compares the variation in the response variable to the variation
+in the fitted model value.  It can be calculated as a ratio of variances, that is the fraction of the total variance that can be explained by the model: 
+
+```{r}
+Swim <- SwimRecords # from mosaicData
+mod <- lm( time ~ year + sex, data = Swim)
+var(fitted(mod)) / var(Swim$time)
+```
+
+The convenience function `rsquared()` does the calculation for you:
+```{r}
+rsquared(mod)
+```
+
+The regression report is a standard way of summarizing
+models.  Such a report is produced by most statistical software
+packages and used in many fields.  The first part of the table
+contains the coefficients --- labeled "Estimate" --- along with
+other information that will be introduced starting in Chapter
+\@ref("chap:confidence").  The $R^2$ statistic is a standard part of the
+report; look at the second line from the bottom.
+```{r}
+summary(mod)
+```
+
+
+Occasionally, you may be interested in the correlation coefficient $r$ between two
+quantities.  
+You can, of course, compute $r$ by fitting a model, finding $R^2$,
+and taking a square root.
+```{r}
+mod2 <- lm( time ~ year, data = Swim)
+coef(mod2)
+sqrt(rsquared(mod2))
+```
+
+The `cor()` function computes this directly:
+```{r}
+cor(Swim$time, Swim$year)
+```
+
+Note that the negative sign on $r$ indicates that record swim `time`
+decreases as `year` increases.  This information about the
+direction of change is contained in the sign of the coefficient from
+the model.  The magnitude of the coefficient tells how fast the
+`time` is changing (with units of seconds per year).  The
+correlation coefficient (like $R^2$) is without units.
+
+Keep in mind that the correlation coefficient $r$ summarizes only the
+simple linear model A ~ B where B is quantitative.  But the
+coefficient of determination, $R^2$, summarizes any model; it is much
+more useful.  If you want to see the direction of change, look at the
+sign of the correlation coefficient.
+
+# Homework
+
+### Thinking Problem 1
+
+For each of the following pairs of models, mark the statement
+that is most correct.
+
+### Part 1
+
+Model 1 . `A ~ B+C`
+Model 2 . `A ~ B*C`
+
+  A Model 1 is nested in Model 2.
+  
+  B Model 2 is nested in Model 1.
+  
+  C The two models are the same.
+  
+  D None of the above is true.
+  
+  A
+
+### Part 2
+
+Model 1 . `A ~ B`
+Model 2 . `B ~ A`
+
+  A Model 1 is nested in Model 2.
+
+  B Model 2 is nested in Model 1.
+
+  C The two models are the same.
+
+  D None of the above is true.
+  
+  D
+
+### Part 3
+
+Model 1 . `A ~ B + C`
+Model 2 . `B ~ A * C`
+
+  A Model 1 is nested in Model 2.
+
+  B Model 2 is nested in Model 1.
+
+  C The two models are the same.
+
+  D None of the above is true.
+  
+  D
+
+### Part 4
+
+Model 1 . `A ~ B + C + B:C`
+Model 2 . `A ~ B * C`
+
+  A Model 1 is nested in Model 2.
+
+  B Model 2 is nested in Model 1.
+
+  C The two models are the same.
+
+  D None of the above is true.
+  
+  D
+  
+## Thinking Problem 2
+
+For each of the following pairs of models, mark the statement that is most correct.
+
+### Part 1
+
+Model 1 . `A ~ B+C`
+Model 2 . `A ~ B*C`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  B
+
+### Part 2
+
+Model 1 . `A ~ B + C`
+Model 2 . `B ~ A * C`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  D
+
+### Part 3
+
+Model 1 . `A ~ B + C + B:C`
+Model 2 . `A ~ B * C`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  D
+
+[From a suggestion by a student]
+
+## Going further
+
+In answering this question, you might want to try out a few examples using real data: just pick two quantitative variables to stand in for `A` and `B`.
+What will be the relationship between R2 for the following two models?
+
+Model 1 . `A ~ B`
+Model 2 . `B ~ A`
+
+  A Model 1 can have a higher R2 than Model 2
+
+  B Model 2 can have a higher R2 than Model 1
+
+  C The R2 values will be the same.
+
+  D None of the above are necessarily true.
+  
+  C
+
+## Application Problem 
+
+Choose one of the models that you have created for an assignment in class. Calculate its \(R^2\) value and, if it is a simple linear model, its correlation coefficient. Write a sentence that explains in the language of the data what \(R^2\) is telling you about the model.
+```{r}
+
+```
+

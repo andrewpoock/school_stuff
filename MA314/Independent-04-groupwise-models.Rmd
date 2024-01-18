@@ -1,0 +1,104 @@
+---
+title: "04 Groupwise Models"
+output: html_notebook
+---
+
+# Groupwise models
+
+Calculating means and other simple statistics is a matter of using the
+right function in R.  The **`mosaic`** package --- which you should
+load in to R as shown in Section \@ref("sec:loading-mosaic") --- makes it straightforward to calculate either a "grand" statistic or a
+"group-wise" statistic.   To illustrate:
+
+Load the **`mosaic`** package, needed only once per session.
+```{r, include = FALSE}
+require(mosaic) 
+require(mosaicData)
+```
+
+Read in data you are interested in analyzing, for instance
+the Cherry-Blossom 2008 data described earlier:^[These are also made available in the **`mosaic`** package as `TenMileRace`.]  
+
+```{r}
+Runners = read.csv("http://tiny.cc/mosaic/Cherry-Blossom-2008.csv")
+names( Runners )
+```
+
+Calculate a grand mean on the "gun" time --- the time between
+the start of the race, signaled by a gun, and when each runner
+crossed the finish line.  
+
+```{r}
+mean(gun ~ 1, data = Runners)
+```
+The model formula `gun ~ 1` is an "all cases the same" model.  You will refer to the `1` as the "Intercept  term" later in the text, but for now, think of it as "one value."  The one value here is the grand mean.
+Grand mean and other "grand" statistics.
+
+```{r}
+mean( gun ~ 1, data = Runners)
+median( gun ~ 1, data = Runners )
+sd( gun ~ 1, data = Runners )
+```
+
+To tell R that you want to break the statistics down by groups, replace the `1` with the variable
+which defines the groups.  You will be
+using this notation frequently in building models.  Here, as before, the `~` means, "model
+by" or "broken down by" or "versus."  To find the means for the gun time broken down by sex, enter
+```{r}
+mean( gun ~ sex, data = Runners )
+```
+
+Other statistics work the same way, for instance,
+```{r}
+sd( gun ~ sex, data = Runners )
+```
+
+Another example ... wage broken down by sector of the economy, using
+data `cps.csv`:^[This data set is made available by **`mosaic`** as `CPS85`.]
+
+```{r}
+CPS = read.csv("http://tiny.cc/mosaic/cps.csv")
+mean( wage ~ sector, data = CPS )
+```
+
+
+
+## Model Values and Residuals
+
+A group-wise model tells you a model value for each group, but often
+you will need these in a case-by-case format: the model value for each
+case in a data set.  The `fitted()` function carries out
+this simple calculation, taking each case in turn, figuring out which
+group it belongs to, and then returning the set of model values for
+all the cases.  It requires two arguments: the model (here provided by `glm()`)
+the data on which the model was based.  For example:
+
+```{r}
+Kids <- KidsFeet   # just get this from mosaicData instead of going out on the web with read.csv
+names(Kids)
+mod <- glm( width ~ sex, data = Kids )
+fitted( mod, Kids )
+```
+
+The residuals are found by subtracting the case-by-case model value
+from the actual values for each case.  
+
+```{r}
+res <- Kids$width - fitted(mod, Kids)
+head(res) # display the first few residuals
+res <- resid(mod) # function resid does the calculation automatically
+head(res)
+```
+
+Take care to use the same quantitative variable (`width` in this case) from the
+data as was used in constructing the model.
+
+The `var()` function will calculate the variance:
+
+```{r}
+var( Kids$width )  # overall variation
+var( fitted(mod, Kids) ) # variation in model values
+var( resid(mod) ) # residual variation
+```
+
+Notice the "model triangle" relationship between these three numbers.

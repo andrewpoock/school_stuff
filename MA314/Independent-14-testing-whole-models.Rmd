@@ -1,0 +1,258 @@
+---
+title: "14-testing-whole-models"
+output: html_notebook
+---
+# Testing whole models
+
+```{r include = FALSE}
+library(mosaic)
+options(width = 100)
+```
+
+```{r, message=FALSE}
+require(mosaic)  # mosaic operators and data will be used in this section
+```
+
+```{r,echo=FALSE}
+set.seed(42)
+```
+
+The chapter presents two ways of doing hypothesis tests on whole
+models: (1) permutation tests where the connection is severed between
+the explanatory and response variables, (2) tests such as `ANOVA ` 
+where the sampling distribution is calculated from first principles.
+In practice, first-principle tests are used most of the time.
+Still, the permutation test is useful for developing intuition about
+hypothesis testing --- our main purpose here --- 
+and for those not-so-rare occasions where the assumptions
+behind the first-principle tests are dubious.
+
+## The Permutation Test
+
+The idea of a permutation test is to enforce the null hypothesis that
+there is no connection between the response variables and the
+explanatory variables.  An effective way to do this is to randomize
+the response variable in a way that is consistent with sampling
+variability.  When constructing confidence intervals, the
+`resample()` function was used.  Re-sampling will typically
+repeat some cases and omit others.  Here, the `shuffle()`
+function will be used instead, to scramble the order of one or more
+variables while leaving the others in their original state.
+
+
+To illustrate, consider a model for exploring whether `sex` and
+`mother`'s height are related to the height of the child:  
+
+```{r}
+
+G <- Galton # from mosaicData
+mod <- lm( height ~ sex + mother, data = G)
+coefficients(mod)
+```
+The coefficients indicate that typical males are taller than typical 
+females by about 5 inches and that for each inch taller the mother is,
+a child will typically be taller by 0.35 inches.  
+A reasonable test statistic to summarize the whole model is $R^2$:
+
+```{r}
+rsquared(mod)
+```
+
+For confidence intervals, re-sampling was applied to the entire data
+frame.  This selects random cases, but each selected case is an
+authentic one that matches exactly the original values for that case.
+The point of re-sampling is to get an idea of the variability
+introduced by random sampling of authentic cases.
+
+```{r}
+do(5) * lm( height ~ sex + mother, data = resample(G))
+```
+The `sex M` coefficients are tightly grouped near 5
+inches, the `mother` coefficients are around 0.3 to 0.4.
+
+In order to carry out a permutation test, do not randomize the
+whole data frame.  Instead, shuffle just the response variable:
+
+```{r}
+do(5) * lm( shuffle(height) ~ sex + mother, data = G)
+```
+Now the `sex M` and `mother` 
+coefficients are close to zero, as would be expected when
+there is no relationship between the response variable and the
+explanatory variables.
+
+In constructing the sampling distribution under the null hypothesis,
+you should do hundreds of trials of fitting the model to the scrambled
+data, calculating the test statistic ($R^2$ here) for each trial.  Note that each
+trial itself involves all of the cases in your sample, but those cases
+have been changed so that the shuffled variable almost certainly
+takes on a different value in every case than in the original data.
+
+```{r}
+nulltrials = do(500) *  rsquared(
+     lm(shuffle(height) ~ sex + mother, data = G))
+```
+Notice that the `rsquared()` operator has been used to calculate
+the test statistic $R^2$ from the model.  The output of `do()`
+is a data frame: 
+```{r}
+head(nulltrials)
+```
+
+Naturally, all of the $R^2$ values for the trials are close to zero.
+After all,  there is no
+relation between the response variable (after randomization with
+`shuffle()`) and the explanatory variables.
+
+The p-value can be calculated directly from the trials, by comparison
+to the observed value in the actual data: $R^2$ was 0.5618. 
+
+```{r}
+tally(nulltrials$rsquared > 0.5618)
+```
+None of the 500 trials were greater than the value of the test statistic, 0.5618.
+It wouldn't be fair to claim that $p=0$, since we only did 500 trials,
+but it is reasonable to say that the permutation test shows the 
+p-value is $p \leq  1/500$.
+
+For interst's sake, have a look at the null distribution for $R^2$:
+
+```{r}
+densityplot(nulltrials$rsquared)
+```
+
+These values are a long way from 0.5618.  The p-value is likely to be much less than
+$1/500$.
+
+
+On modern computers, the permutation test is entirely practical.  But
+a few decades ago, it was not.  Great creativity was applied to
+finding test statistics where the sampling distribution could be
+estimated without extensive calculation.  One of these is the F
+statistic.  This is still very useful today and is a standard part of
+the regression report in many statistical packages.  
+
+Here is the regression report from the
+`height ~ sex + mother`:
+```{r}
+mod <- lm( height ~ sex + mother, data = G)
+summary(mod)
+```
+
+The last line of the report
+shows an F statistic of 574 based on an $R^2$ of 0.562 and
+translates this to a p-value that is practically zero: `<2e-16`.
+
+By way of showing that the regression report is rooted in the same
+approach shown in the chapter, you can confirm the calculations.
+There are $m=3$ coefficients and $n=898$ cases,
+producing $n-m=895$ degrees of freedom in the denominator and $m-1=2$
+degrees of freedom in the numerator. The calculation of the F
+statistic from $R^2$ and the degrees of freedom follows the formula
+given in the chapter.  
+$$ F = \frac{\frac{R^2}{m-1}}{\frac{1-R^2} {n-m}} $$
+Plugging the values into the formula
+```{r}
+(0.562 / 2) / ((1-.562) / 895)
+```
+F is the test statistic.  To convert it to a p-value, you need to
+calculate how extreme the value of F$=574.2$ is with reference to the
+F distribution with 895 and 2 degrees of freedom.
+```{r}
+1 - pf( 574.2, 2, 895)
+```
+
+The calculation of p-values from F always follows this form.  In the
+context of the F distribution, "extreme" always means "bigger
+than."  So, calculate the area under the F distribution to the right
+of the observed value.
+
+Here's a picture of the relevant F distribution:
+
+```{r}
+f <- rf(1000, 2, 895) # 1000 values from the f distribution
+densityplot( f, xlim = c(0,10), main="density plot for F(2,895)" )  
+```
+
+Very little of this distribution lies to the right of 6; virtually none of it lies to the right of 574.
+
+## Homework
+
+### Problem 1
+
+Here is the report of a simple model of the foot-length data:
+```{r}
+library(mosaicData)
+kids = KidsFeet
+summary( lm( length ~ 1, data=kids ) )
+
+```
+
+
+The summary report includes a p-value (written as Pr(>|t|). What is the Null Hypothesis corresponding to this p-value:
+
+    A The mean cannot be calculated.
+    B The sample mean is zero.
+    C The population mean is zero.
+    D The sample mean is greater than zero.
+    E The sample mean is less than zero.
+    F The population mean is greater than zero.
+    G The population mean is less than zero.
+    
+    C
+
+###  Problem 2
+
+You can test the null hypothesis that the population mean of a variable x is zero by constructing a model x~1 and interpreting the coefficient on the intercept term 1.
+
+Often, the null hypothesis that the population mean is zero is irrelevant. For example, in the kid’s feet data, the mean foot width is 8.99 cm. There is no physical way for the population mean to be zero.
+
+But, suppose you want to test the null hypothesis that the population mean (for the population of school-aged children from whom the sample was drawn) is 8.8 cm. To do this, create a new variable that would be zero if the population mean were 8.8 cm. This is simple: make the new variable by subtracting 8.8 cm from the original variable. The new variable can then be tested to see if its mean is different from zero.
+
+Using the kids-feet data:
+
+```{r}
+kids$newlength = kids$length - 8.8
+summary( lm( newlength ~ 1, data=kids ) )
+```
+
+
+  1. Find the p-value on the null-hypothesis that the population mean of the foot width is 8.8 cm.
+  
+    0.000 0.024 0.026 0.058 0.094 0.162 0.257
+    
+    0
+
+  2. Find the p-value on the null-hypothesis that the population mean of the foot width is 8.9 cm.
+  
+    0.00 0.23 0.27 0.31 0.48 0.95
+    
+    0
+
+### Problem 3
+
+The t- and F-distributions are closely related. That is, you can calculate the p-value on a t-statistic by using the F distribution, if you do it right.
+
+Generate a large random sample from a t-distribution with 10 degrees of freedom. Then generate another random sample from the F-distribution with 1 and 10 degrees of freedom.
+
+```{r}
+t <- rt(1000, 10)
+f <- rf(1000, 10, 1)
+densityplot( t*t, xlim = c(-5,5), main="t density plot" )
+densityplot( f, xlim = c(0,10), main="f density plot" )
+```
+
+
+Graphically compare the distributions of the F and t values. What do you see?
+
+    • True or False They are the same.
+    False
+    • True or False The F distribution is much more skew to the right.
+    True
+    • True or False The t distribution is symmetrical around zero.
+    True
+
+Now compare the distributions of the F values and the square of the t values. What do you see?
+
+    • True or False They are the same.
+    True

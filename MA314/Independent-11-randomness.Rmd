@@ -1,0 +1,626 @@
+---
+title: "09-Partitioning"
+output: html_notebook
+---
+
+# Modeling randomness
+
+```{r include = FALSE}
+library(mosaic)
+options(width = 100)
+```
+
+```{r, echo=FALSE}
+set.seed(42)
+```
+One of the most surprising outcomes of the revolution in computing
+technology has been the discovery of diverse uses for randomness 
+in the analysis of data and in science generally.  Most young people
+have little trouble with the idea of a computer generating random data;
+they see it in computer games and simulations.  Older people,
+raised with the idea that computers do mathematical operations and
+that such operations are completely deterministic, sometimes find 
+computer-generated randomness suspect.  Indeed, conventional algebraic
+notation ($+$, $-$, $\sqrt{ }$, $\cos$, and so on) has no
+notation for "generate at random."
+
+One of the simplest operators for generating random events is
+`resample`.  This takes two arguments: the first is a set of
+items to choose from at random, the second is how many events
+to generate.  Each item is equally likely to be
+choosen.  For example, here is a simulation of a coin flip:
+```{r}
+coin <- c("H","T")
+resample(coin, 5)
+resample(coin, 5)
+```
+The first command creates an object holding the possible outcome of
+each event, called `coin`.  The next command generated five
+events, each event being a random choice of the outcomes in
+`coin`.
+
+Another example is rolling dice.  First, construct a set of the
+possible outcomes: the numbers 1, 2, 3, 4, 5, 6.
+```{r}
+die <- seq(1,6)
+die
+```
+Then generate random events.  Here is a roll of two dice.
+```{r}
+resample(die,2)
+```
+
+The `resample()` function is also useful for selecting cases at
+random from a data frame.  You have already seen it put to use in generating sampling
+distributions via the bootstrap.  This technique will be further developed in later chapters. 
+
+
+## Random Draws from Probability Models
+
+Although `resample()` is useful for random sampling, it can work
+only with finite sets of possible outcomes such as H/T or 1/2/3/4/5/6
+or the cases in a data frame.  By default in `resample()`, the 
+underlying probability model is equiprobability
+ --- each possible outcome is equally likely.
+You can specify another probability model by using the `prob = ` argument
+to `resample()`. For instance, to flip coins that are very likely (90% of the time, on average) to come up heads:
+```{r}
+resample( coin, 10, prob = c(.9,.1))
+```
+
+
+R provides other operators that allow
+draws to be made from outcome sets that are infinite.
+ 
+
+For example, the `rnorm()` function makes random draws from a
+normal probability distribution.  The required argument tells how many
+draws to make.  Optional, named arguments let you specify the mean and
+standard deviation of the particular normal distribution that you
+want.  To illustrate, here is a set of 15 random numbers from a normal
+distribution with mean 1000 and standard deviation 75:
+```{r}
+samps <- rnorm(15, mean = 1000, sd = 75)
+samps
+```
+In this example, the output was assigned to an object `samps`
+to facilitate some additional computations to the
+values.  For instance, here is the mean and standard deviation of the
+sample:
+```{r}
+mean(samps)
+sd(samps)
+```
+Don't be surprised that the mean and standard deviation of the sample
+don't match exactly the parameters that were set with the arguments
+`mean = 1000, sd = 75`.  The sample was drawn at random and so the
+sample statistics are going to vary from one sample to the next.  Part
+of the statistical methodology to be studied in later chapters has to
+do with determining how close the statistics calculated from a sample
+are likely to be to the parameters of the underlying population.
+
+Often you will generate very large samples.  In these situations you
+usually don't want to display all the samples, just do calculations
+with them.  The practical limits of "large" depend on the computer
+you are using and how much time you are willing to spend on a
+calculation.   For an operator like `rnorm` and the others to be
+introduced in this chapter, it's feasible to generate samples of size
+10,000 or 100,000 on an ordinary laptop computer.  
+```{r}
+samps <- rnorm(100000, mean = 1000, sd = 75)
+mean( samps )
+sd( samps )
+```
+Notice that the sample mean and standard deviation are quite close to
+the population parameters in this large sample.  (Remember not to put commas in as punctuation in large numbers: it's `100000` not 100,000.)
+
+The simulations that you will do in later chapters
+will be much more elaborate than the simple draws here.  Even with 
+today's computers, you will want to use only a few hundred trials.
+
+## Standard Probability Models
+
+R provides a large set of operators like `rnorm` for different
+probability models.  All of these operators work in the same way:
+<!-- begin itemize -->
+
+* Each has a required first argument that gives the number of
+draws to make.
+
+* Each has an optional set of parameters that specify the
+particular probability distribution you want.
+<!-- end itemize -->
+
+All the operators start with the letter `r` --- standing for
+"random" --- followed by the name of the probability model:
+
+
+Family | R name |    Parameters    | Nature        
+-------|--------|------------------|---------
+Normal | `rnorm` | `mean`,`sd` | continuous
+Uniform | `runif` | `min`,`max` | continuous
+Binomial | `rbinom`| `size`,`prob` | discrete
+Poisson | `rpois`| Average rate (written `lambda`)| discrete 
+Exponential | `rexp`| Same rate as in poisson but the parameter is called `rate`.| continuous 
+Lognormal | `rlnorm`| Mean and sd of the natural logarithm. `meanlog`, `sdlog`| continuous 
+$\chi^2$ | `rchisq` | Degrees of freedom (`df`)|continuous 
+t | `rt` | Degrees of freedom (`df`)|continuous
+F | `rf` | Degrees of freedom in the numerator and in the denominator (`df1`, `df2`)|continuous
+
+
+To use these operators, you first must choose a particular probability
+model based on the setting that applies in your situation.  This
+setting will usually indicate what the population parameters should
+be.  Some examples:
+<!-- begin itemize -->
+
+
+* You are in charge of a hiring committee 
+that is  going to interview three candidates selected from a
+population of job applicants that is 63% female.  How many of the
+interviewees will be female?  Modeling this as random selection from
+the applicant pool, a binomial model is appropriate.  The `size`
+of each trial is 3, the probability of being female is 63% :
+```{r}
+samps <- rbinom(40, size = 3, prob = 0.63)
+samps
+```
+There are 40 trials here, since the first argument was set to 40.
+Remember, each of the trials is a simulation of one hiring event.  In
+the first simulated event, two of the interviewees were female; in the
+third only one was female.  Typically, you will be summarizing all the
+simulations, for example to see how likely each possible outcome is.
+```{r}
+table(samps)
+```
+* You want to simulate the number of customers who come into a
+store over the course of an hour.  The average rate is 15 per hour.
+To simulate a situation where customers arrive randomly, the poisson
+model is appropriate:
+```{r}
+rpois(25, lambda = 15)
+```
+* You want to generate a simulation of the interval between
+earthquakes as in Example \@ref("example:earthquake-intervals").  To
+simulate the random intervals with a typical rate of 0.03 earthquakes
+per year, you would use
+```{r}
+rexp( 15, rate = 0.03 )
+```
+Notice the huge variation in the intervals, from less than two months
+to more than 210 years between earthquakes.
+
+<!-- end itemize -->
+
+## Quantiles and Coverage Intervals
+
+
+You will often need to compute coverage intervals in order to describe 
+the range of likely outcomes from a random process.  R provides a
+series of operators for this purpose; a separate operator for each
+named probability model.  The operators all begin with `q`,
+standing for quantiles.  In all cases, the first argument is
+the set of quantiles you want to calculate for the particular
+probability model.  The optional named arguments are the parameters.
+
+Remember
+that to find a 95%  coverage interval you need the 0.025 and 0.975
+quantiles.  For a 99%  interval, you need the 0.005 and 0.995
+quantiles.
+
+To illustrate, here are 95%  coverage intervals for a few
+probability models. 
+<!-- begin itemize -->
+
+* A normal distribution with mean 0 and standard deviation 1:
+```{r}
+qnorm( c(0.025, 0.975), mean = 0, sd = 1)
+```
+
+
+* The hiring committee situation modelled by a binomial
+distribution with `size = 3` and `prob = 0.63`:
+
+```{r}
+qbinom( c(0.025, 0.975), size = 3, prob = 0.63)
+```
+
+Perhaps you are surprised to see that the coverage interval includes
+all the possible outcomes.  That's because the number of cases in each
+trial ($n = 3$) is quite small. 
+
+* The number of customers entering a store during an hour 
+as modelled by a poisson
+distribution with an average rate of 15 per hour.
+```{r}
+qpois( c(0.025, 0.975), lambda = 15)
+```
+
+* The interval between earthquakes modelled by an exponential
+distribution with a typical rate of 0.03 earthquakes per year:
+```{r}
+qexp( c(.025, .975), rate = 0.03)
+```
+<!-- end itemize -->
+
+
+You can also use the `q` operators to find the value that would
+be at a particular percentile.  For example, the exponential model with `rate = 0.03` 
+gives the 25th percentile of
+the interval between earthquakes as:
+```{r}
+qexp( .25, rate = 0.03)
+```
+A quarter of the time, the interval between earthquakes will be 9.59
+years or less.
+
+It's entirely feasible to calculate percentiles and 
+coverage intervals by combining
+the random-number generators with `quantile`.  For example, here
+is the 95% coverage interval from a normal distribution with mean 0
+and standard deviation 1:
+```{r}
+samps <- rnorm(10000, mean = 0, sd = 1)
+qdata( samps, c(.025, .975) )
+```
+
+The disadvantage of this approach is that it is a simulation and the
+results will vary randomly.  By making the sample size large enough
+--- here it is $n = 10000$ --- you can reduce the random variation. 
+Using the `q` operators uses mathematical analysis to give 
+you what is effectively an
+infinite sample size.  For this reason, it's advisable to use the
+`q` operators when you can.  However, for many of the techniques to
+be introduced in later chapters you will have to generate a random
+sample and then apply `quantile` to approximate the coverage intervals.
+
+## Percentiles
+
+
+A percentile computation applies to situations where you have a
+measured value and you want to know where that value ranks relative to
+the entire set of possible outcomes.  You have already seen
+percentiles computed from samples; they also apply to probability models.
+
+It's easy to confuse percentiles with quantiles because they are so
+closely related.
+Mathematically, the percentile operators are the inverse of the
+quantile operators. 
+To help you remember which is which, it's helpful to distinguish them
+based on the type of argument that you give to the operator:
+<!-- begin description -->
+
+* **Percentile** (e.g. `pnorm`)
+The input 
+argument is a measured value, something that could be the
+output of a single draw from the probability distribution. The output
+is always a number between 0 and 1 --- a percentile. 
+
+* **Quantile** (e.g. `qnorm`)
+The input is a percentile, a number between 0 and 1.
+The output is on the scale of the measured variable.
+<!-- end description -->
+
+
+Example:  You have just gotten your score, 670, on a professional school
+admissions test.  According to the information published by the
+testing company, the scores are normally distributed with a mean of
+600 and a standard deviation of 100.  So, your ranking on the test, as
+indicated by a percentile, is:
+
+```{r}
+pnorm(670, mean = 600, sd = 100)
+```
+Your score is at about the 75th percentile.  
+
+Example: Unfortunately, the professional school that you want to go to
+accepts only students with scores in the top 15 percent.  Your score,
+at 75.8%, isn't good enough.  So, you will study some more and take
+practice tests until your score is good enough.
+How well will you need to score to reach the 85th percentile?
+```{r}
+qnorm(0.85, mean = 600, sd = 100)
+```
+
+# Homework
+
+### Problem 1
+
+Two basic operations that you need to perform on probability models are these:
+
+**percentile** Given a value, what is the probability (according to the model) of the outcome from one trial being that value or less?
+
+**quantile** Given a probability, what is the value whose percentile is that probability?
+
+To illustrate by example, suppose that you are dealing with a probability model for an IQ test score that is a normal distribution with these parameters: mean = 100 and standard deviation = 15.
+
+Percentile question: What is the percentile that corresponds to a test score of 120? Answer: 0.91 or, in other words, the 91st percentile.
+
+```{r}
+pnorm(120, mean=100,sd=15)
+```
+
+Quantile question: What score will 95% of scores be less
+than or equal to? Answer: a score of 125.
+
+```{r}
+qnorm(0.95, mean=100, sd=15)
+
+```
+
+Here are two very basic questions about percentile and quantile calculations:
+
+ (a) True or False The output of a percentile question will always be a probability, that is, a number between 0 and 1.
+ 
+ True
+ 
+ (b) True or False The output of a quantile question will always be a value, that is, something in the same units as the random variable.
+ 
+ True
+
+Sometimes to answer more complicated questions, you need first to answer one or more percentile or quantile questions.
+
+Answer the following questions, using the normal probability model with the parameters given above:
+
+ (a) What’s the test score that almost everybody, say, 99% of people, will do better than?
+ 
+```{r}
+qnorm(.01, mean=100,sd=15)
+```
+ 
+ • Which kind of calculation is this? quantile
+
+ • What is the answer? 65
+
+ (b) To calculate a coverage interval on a probability model, you need to calculate two quantities: one for the left end of the interval and one for the right. Which type of calculation are these probabilities from:
+ 
+ quantile
+
+  (c) Calculate a 50% coverage interval on the test scores, that is the range from the 0.25 quantile to the 0.75 quantile:
+  
+```{r}
+qnorm(.25, mean=100,sd=15)
+qnorm(.75, mean=100,sd=15)
+```
+  
+  • Left end of interval: 90
+
+  • Right end of interval: 110
+ 
+ (d) Calculate an 80% coverage interval, that is the range from the 0.10 to the 0.90 quantile:
+ 
+```{r}
+qnorm(.1, mean=100,sd=15)
+qnorm(.9, mean=100,sd=15)
+```
+ 
+  • Left end of interval: 81
+  
+  • Right end of interval: 119
+  
+ (e) To calculate the probability of an outcome falling in a given range, you need to do two percentile calculations, one for each end of the range. Then you subtract the two different probabilities. What is the probability of a test score falling between 100 and 120?
+ 
+```{r}
+pnorm(120, mean=100,sd=15)-pnorm(100, mean=100,sd=15)
+```
+ 
+ .41
+    
+### Problem 2
+
+A coverage interval gives a range of values. The “level” of the
+interval is the probability that a random trial will fall inside
+that range. For example, in a 95% coverage interval, 95% of
+the trials will fall within the range.
+
+To construct a coverage interval, you need to translate the
+level into two quantiles, one for the left side of the range and
+one for the right side. For example, a 50% coverage interval
+runs from the 0.25 quantile on the left to the 0.75 quantile on
+the right; a 60% coverage interval runs from 0.20 on the left
+to 0.80 on the right. The probabilities used in calculating the
+quantiles are set so that
+
+  • the difference between them is the level of the interval.
+For instance, 0.75 and 0.25 give a 50% interval.
+
+  • they are symmetric. That is, the left probability should
+be exactly as far from 0 as the right probability is from 1
+
+A classroom of students was asked to calculate the left
+and right probabilities for various coverage intervals. Some of
+their answers were wrong. Explain what is wrong, if anything,
+for each of these answers.
+
+ (a) For a 70% interval, the 0.20 and 0.90 quantiles 
+    
+    A The difference between them isn’t 0.70
+    B They are not symmetrical.
+    C Nothing is wrong.
+    
+    B
+ 
+ (b) For a 95% interval, the 0.05 and 0.95 quantiles.
+
+    A The difference between them isn’t 0.95
+    B They are not symmetrical.
+    C Nothing is wrong.
+    
+    A
+ 
+ (c) For a 95% interval, the 0.025 and 0.975 quantiles.
+    
+    A The difference between them isn’t 0.95
+    B They are not symmetrical.
+    C Nothing is wrong.
+    
+    C
+
+### Problem 3
+
+For each of the following probability models, calculate a 95%
+coverage interval. This means that you should specify a left
+value and a right value. The left value corresponds to a probability of 0.025 and the right value to a probability of 0.975.
+
+  (a) The number of cars driving along a highway in one hour, when the mean number of cars is 2000 per hour. Hint: Poisson model
+  
+```{r}
+qpois( c(0.025, 0.975), lambda = 2000)
+```
+  
+    Left side of interval: 1913
+    Right side of interval: 2088
+
+  (b) The number of heads out of 100 flips of a fair coin. Hint:
+Binomial model.
+
+```{r}
+qbinom(c(0.025, 0.975), size = 100, prob = 0.5)
+```
+
+    Left side of interval: 40
+    Right side of interval: 60
+    
+  (c) The angle of a random spinner, ranging from 0 to 360 degrees. Hint: Uniform model.
+  
+```{r}
+qunif(c(0.025, 0.975), 0, 360)
+```
+  
+  
+    Left side of interval: 9
+    Right side of interval: 351
+
+
+### Problem 4
+
+College admissions offices collect information about each
+year’s applicants, admitted students, and matriculated students. At one college, the admissions office knows from past
+years that 30% of admitted students will matriculate.
+
+The admissions office explains to the administration each
+year that the results of the admissions process vary from year
+to year due to random sampling fluctuations. Each year’s
+results can be interpreted as a draw from a random process
+with a particular distribution.
+
+Which family of probability distribution can best be used
+to model each of the following situations?
+
+  (a) 1500 students are offered admission. The number of students who will actually matriculate is:
+
+    A Normal
+    B Uniform
+    C Binomial
+    D Poisson
+    E Exponential
+    F Lognormal
+    
+    C
+
+  (b) The average SAT score of the admitted applicants:
+  
+    A Normal
+    B Uniform
+    C Binomial
+    D Poisson
+    E Exponential
+    F Lognormal
+    
+    A
+
+  (c) The number of women in the matriculated class:
+
+    A Normal
+    B Uniform
+    C Binomial
+    D Poisson
+    E Exponential
+    F Lognormal
+    
+    A
+
+### Problem 5
+
+For each of the following, decide whether the random variable
+is binomial or not. Then choose the best answer from the set
+offered.
+
+  (a) Number of aces in a draw of 10 cards from a shuffled deck
+with replacement.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed
+    for every individual component.
+    D It’s not for both of the above reasons.
+    
+    A
+    
+  (b) Number of aces in a draw of 10 cards from a shuffled deck
+without replacement.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed
+    for every individual component.
+    D It’s not for both of the above reasons.
+    
+    C
+
+  (c) A broken typing machine has probability of 0.05 to make
+a mistake on each character. The number of erroneous
+characters in each sentence of a report.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed
+    for every individual component.
+    D It’s not for both of the above reasons.
+    
+    B
+
+  (d) Suppose screws produced by a certain company will be defective with probability 0.01 independent of each other.
+The company sells the screws in a package of 10. The
+number of defective screws in a randomly selected pack.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed for every individual component.
+    D It’s not for both of the above reasons.
+    
+    A
+    
+  (e) Observe the sex of the next 50 children born at a local
+hospital. Let x= # of girls among them.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed
+    for every individual component.
+    D It’s not for both of the above reasons.
+    
+    A
+
+  (f) A couple decides to continue to have children until their
+first daughter. Let x = # of children the couple has.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed
+    for every individual component.
+    D It’s not for both of the above reasons.
+    
+    B
+
+  (g) Jason buys the state lottery ticket every month using his
+favorite combination based on his birthday and his wife’s.
+x= # of times he wins a prize in one year.
+
+    A It is binomial.
+    B It’s not because the sample size is not fixed.
+    C It’s not because the probability is not fixed for every individual component.
+    D It’s not for both of the above reasons.
+    
+    A
+

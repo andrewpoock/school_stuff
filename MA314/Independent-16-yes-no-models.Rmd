@@ -1,0 +1,264 @@
+---
+title: "16-yes-no-models"
+output: html_notebook
+---
+# Models of Yes/No Variables
+
+```{r include = FALSE}
+library(mosaic)
+library(ggplot2)
+options(width = 100)
+```
+
+ 
+Fitting logistic models uses many of the same ideas as in linear
+models.
+
+```{r}
+library(mosaic)
+```
+
+## Fitting Logistic Models
+
+The `glm` operator fits logistic models.  (It also fits other
+kinds of models, but that's another story.)  `glm` takes model
+design and data arguments that are identical to their counterparts in
+`lm`.  Here's an example using the smoking/mortality data in `Whickham`:
+```{r}
+mod = glm( outcome ~ age + smoker, data=Whickham, 
+    family="binomial")
+```
+ 
+The last argument, `family="binomial"`, simply specifies to
+`glm()` that the logistic transformation should be used.
+`glm()` is short for Generalized Linear Modeling, a broad label
+that covers logistic regression as well as other types of models
+involving links and transformations.
+
+
+The regression report is produced with the `summary` operator,
+which recognizes that the model was fit logistically and does the
+right thing:
+```{r}
+summary(mod)
+```
+
+Keep in mind that the coefficients refer to the intermediate model
+values $Y$.  The probability $P$ will be $e^Y / (1 + e^Y )$.
+
+
+## Fitted Model Values
+
+Logistic regression involves two different kinds of fitted values:
+the intermediate "link" value $Y$ and the probability $P$.  The
+`fitted` operator returns the probabilities:
+```{r }
+probs = fitted(mod) 
+```
+ 
+There is one fitted probability value for each case.
+
+The link values can be gotten via the `predict` operator
+```{r}
+linkvals = predict(mod, type="link")
+head(linkvals)
+```
+
+
+Notice that the link values are not necessarily between zero and one.
+
+The `predict` operator can also be used to calculate the
+probability values.
+```{r}
+response_vals = predict(mod, type="response")
+head(response_vals)
+```
+
+This is particularly useful when you want to use `predict` to
+find the model values for inputs other than that original data frame
+used for fitting.
+
+## Which Level is "Yes"?
+
+In fitting a logistic model, it's crucial that the response variable
+be categorical, with two levels.  It happens that in the
+`Whickham` data, the `outcome` variable fits the bill: the
+levels are `Alive` and `Dead`.
+
+The `glm` software will automatically recode the response
+variable as 0/1.  The question is, which level gets mapped to 1?  In
+some sense, it makes no difference since there are only two levels.
+But if you're talking about the probability of dying, it's nice not
+to mistake that for the probability of staying alive.  So make sure
+that you know which level in the response variable corresponds to 1:
+it's the second level.  
+
+Here is an easy way to make sure which level has been coded as "Yes".
+First, fit the all-cases-the-same model, `outcome` ~ 1.  The
+fitted model value $P$ from this model will be the proportion of cases for which the outcome was "Yes."
+```{r }
+mod2 = glm( outcome ~ 1, data = Whickham, family = "binomial")
+```
+ 
+```{r eval = FALSE}
+fitted(mod2)
+```
+
+ 
+So, 28% of the cases were "Yes."  But which of the two levels is "Yes?" 
+Find out just by looking at the proportion of each level:
+```{r }
+tally( ~ outcome, data = Whickham, format = "proportion")
+```
+ 
+
+If you want to dictate which of the two levels is going to be encoded
+as 1, you can use a comparison operation to do so:
+```{r results = "hide"}
+mod3 = glm( outcome == "Alive" ~ 1, data=Whickham, 
+   family="binomial")
+mod3
+```
+
+In this model, "Yes" means `Alive`.
+
+## Analysis of Deviance
+
+The same basic logic used in analysis of variance applies to logistic
+regression, although the quantity being broken down into parts is not
+the sum of squares of the residuals but, rather, the deviance.
+
+The `anova` software will take apart a logistic model, term by
+term, using the order specified in the model.
+
+```{r }
+anova(mod, test="Chisq")
+```
+ 
+Notice the second argument, `test="Chisq"`, which instructs
+`anova` to calculate a p-value for each term.  This involves a
+slightly different test than the F test used in linear-model ANOVA  
+
+The format of the ANOVA table for logistic regression is somewhat
+different from that used in linear models, but the concepts of degrees
+of freedom and partitioning still apply.  The basic idea is to ask
+whether the reduction in deviance accomplished with the model terms is
+greater than what would be expected if random terms were used instead.
+
+#  Homework
+
+### Problem 1
+
+George believes in astrology and wants to check whether a person’s sign influences whether they are left- or right-handed.
+
+With great effort, he collects data on 100 people, recording their dominant hand and their astrological sign. He builds a logistic model hand ∼ sign. The deviance from the model `hand ∼ 1` is 102.8 on 99 degrees of freedom. Including the sign
+term in the model reduces the deviance to 63.8 on 88 degree of freedom.
+
+The sign term only reduced the degrees of freedom by 11 (that is, from 99 to 88) even though there are 12 astrological signs. Why?
+
+    A There must have been one sign not represented among the 100 people in George’s sample.
+    B sign is redundant with the intercept and so one level is lost.
+    C hand uses up one degree of freedom.
+    
+    A
+
+According to theory, if sign were unrelated to hand, the 11 degrees of freedom ought to reduce the deviance by how much, on average?
+
+    A 11/99 × 102.8
+    B 1/11 × 102.8
+    C to zero
+    D None of the above
+    
+    C
+
+### Problem 3
+
+This model traces through some of the steps in fitting a model of a yes/no process. For specificity, pretend that the data are from observations of a random sample of teenaged drivers. The response variable is whether or not the driver was in an
+accident during one year (birthday to birthday). The explanatory variables are sex and age of the driver. The model being fit is `accident ∼ 1 + age + sex`.
+
+Here is a very small, fictitious set of data.
+
+
++------+-----+-----+-----------+
+| Case | Age | Sex | Accident? |
++------+-----+-----+-----------+
+| 1    | 17  | F   | Yes       |
++------+-----+-----+-----------+
+| 2    | 17  | M   | No        |
++------+-----+-----+-----------+
+| 3    | 18  | M   | Yes       |
++------+-----+-----+-----------+
+| 4    | 19  | F   | No        |
++------+-----+-----+-----------+
+
+Even if it weren’t fictitious, it would be too small for any practical purpose. But it will serve to illustrate the principles of fitting.
+
+In fitting the model, the computer compares the likelihoods of various candidate values for the coefficients, choosing those coefficients that maximize the likelihood of the model.
+
+Consider these two different candidate coefficients:
+
+
++--------------------------+
+| Candidate A Coefficients |
++------------+------+------+
+| Intercept  | age  | sexF |
++------------+------+------+
+| 35         | -2   | -1   |
++------------+------+------+
+| Candidate B Coefficients |
++------------+------+------+
+| Intercept  | age  | sexF |
++------------+------+------+
+| 35         | -2   | 0    |
++------------+------+------+
+
+The link value is found by multiplying the coefficients by the values of the explanatory variables in the usual way.
+
+  • Using the candidate A coefficients, what is the link value for case 1?
+
+    A 35 − 2 × 17 − 0 = 1
+    B 35 − 2 × 17 − 1 = 0
+    C 35 − 2 × 18 − 1 = −2
+    D 35 − 2 × 19 − 1 = −4
+    
+    B
+
+  • Using the candidate B coefficients, what is the link value for case 3?
+  
+    A 35 − 2 × 18 − 0 = −1
+    B 35 − 2 × 18 − 1 = −2
+    C 35 − 2 × 18 + 1 = 0
+    D 35 − 2 × 18 − 2 = −3
+    
+    A
+
+The link value is converted to a probability value by using the logistic transform.
+
+  • The link value under the candidate A coefficients for case 4 is `35 − 2 × 19 − 1 = −4`. What is the corresponding probability value? (Hint: Plug in the link value to the logistic transform!)
+
+    0.018
+
+  • The link value under the candidate B coefficients for case 4 is `35 − 2 × 19 − 0 = −3`. What is the corresponding probability value?
+  
+    0.047
+
+The probability value is converted to a likelihood by calculating the probability of the observed outcome according to the probability value. When the outcome is “Yes,” the likelihood is just the same as the probability value. But when the outcome is “No,” the likelihood is 1 minus the probability value.
+
+  • The link value for case 3 using the candidate A coefficients is −1 and the corresponding probability value is 0.269. What is the likelihood of the observed
+value of case 3 under the candidate A coefficients?
+
+    0.269
+
+  • The link value for case 2 using the candidate A coefficients is 1 and the corresponding probability value is 0.731. What is the likelihood of the observed
+value of case 2 under the candidate A coefficients?
+
+    0.269
+
+To compute the likelihood of the entire set of observations under the candidate coefficients, multiply together the likelihoods for all the cases. Do this calculation separately for the candidate A coefficients and the candidate B coefficients. Show your work. Say which of the two candidates gives the
+bigger likelihood?
+
+Canidate A has a bigger likelihood
+
+In an actual fitting calculation, the computer goes through large numbers of candidate coefficients in a systematic way to find the candidate with the largest possible likelihood: the maximum likelihood candidate. Explain why it makes sense to choose the candidate with the maximize rather than the minimum likelihood.
+
+  the maximum likelihood means that the observed data from the model more likely to happen, giving us a more realistic model
