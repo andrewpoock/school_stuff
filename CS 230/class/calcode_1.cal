@@ -1,0 +1,9 @@
+#liters.cal -- quarts to liters solver in cal
+
+print "Welcome to my quarts to liters solver";
+print;
+
+imput "Enter the amount of quarts:" quart;
+liters := quart * 1.1365225;
+
+print "That eqautes to", liters, "liters";

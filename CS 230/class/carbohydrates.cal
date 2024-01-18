@@ -1,0 +1,16 @@
+# carbohydrates.cal
+# A program that computes the molecular weight of a carbohydrate.
+# Paul Zelle
+
+print "This program will find the mass of a carbohydrate based on its molecular formula.";
+print;
+
+input "Enter the number of hydrogen atoms in a molecule of the carbohydrate:" h;
+input "Enter the number of carbon atoms in a molecule:" c;
+input "Enter the number of oxygen atoms in a molecule:" o;
+
+weight := 1.00794*h + 12.0107*c + 15.994*o;
+
+print "The weight of the carbohydrate you have described is", weight, "grams/mole.";
+print;
+print "Thanks for using the carbohydrate weight finder!"

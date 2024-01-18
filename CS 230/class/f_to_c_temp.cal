@@ -1,0 +1,15 @@
+# FtoC.cal -- This program converts Fahrenheit to Celcius
+# By: Tiffany Michels
+# CS 230
+
+print "This program will convert any degrees you enter in Fahrenheit to Celsius.";
+print;
+
+input "Enter your temperature in degrees Fahrenheit: " fare;
+
+cel = (fare-32) x (5/9);
+
+print;
+print fare,"degrees Fahrenheit is ", cel,"degrees Celcius.";
+print;
+print "Thank you for using this converter!";

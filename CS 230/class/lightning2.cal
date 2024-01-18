@@ -1,0 +1,12 @@
+# lightning.cal - calculate the distance between you and a lightning strike
+# based off of when you hear the thunder
+# by Sean Drewes
+
+print "This is a simple program that calculates the distance from a lightning strike.";
+
+time := eval(input "Enter the seconds it took for you to hear the thunder after you saw the lightning.");
+feetaway := (time * 1125);
+miles := (feetaway / 5280);
+
+print "The lightning struck", miles, "miles away.";
+input "Press enter to quit.";

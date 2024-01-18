@@ -1,0 +1,14 @@
+# coffee.cal -- order cost calculator in cal 
+
+print "This program calculates the cost of a shipping order of coffee";
+print;
+
+input "Enter the amount of coffee you're ordering in pounds: " coffee;
+
+cost := coffee * .86 + 1.5;
+profit := (coffee * 10.5) - cost;
+
+print "The cost of the order is", round(cost, 2), "dollars";
+print "The profit from this order will be", round(profit 2,), "dollars";
+print;
+print "Thanks for using the coffee order calculator!";

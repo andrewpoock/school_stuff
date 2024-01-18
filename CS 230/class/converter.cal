@@ -1,0 +1,13 @@
+# lbkg.cal - program to convert kilograms to pounds in cal
+
+print "Effortlessly convert kilograms to pounds!";
+print;
+
+input "Enter the weight in kilograms to convert:" kg;
+
+lb := kg * 2.205;
+
+print "The weight in pounds is" lb;
+print;
+print "Thanks for using the weight converter!";
+print;

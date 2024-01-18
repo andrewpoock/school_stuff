@@ -1,0 +1,12 @@
+# thermo.cal -- temperature converter (F -> C)
+# A cal program that converts Fahrenheit to Celsius
+
+print "Time to convert Fahrenheit into Celsius!";
+print;
+
+input "Enter the temperature in Fahrenheit: " tempf;
+
+tempc := (5/9) * (tempf - 32);
+
+print;
+print "The temperature is", tempc, "degrees Celsius.";

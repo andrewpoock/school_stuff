@@ -1,0 +1,10 @@
+# prog5.cal
+#   simple sequential program
+
+print "Adder";
+
+input "Enter two numbers:" a, b;
+
+c := a + b;
+print "The sum is", a + b, "or", c;
+

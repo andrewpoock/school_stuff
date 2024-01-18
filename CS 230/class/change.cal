@@ -1,0 +1,16 @@
+# change.cal - Calculate the total value of change in dollars
+
+print "Change Value Calculator";
+print;
+
+print "Please enter the count of each coin type:";
+input "Number of Quarters:" quarters;
+input "Number of Dimes:" dimes;
+input "Number of Nickels:" nickels;
+input "Number of Pennies:" pennies;
+
+total := quarters * 0.25 + dimes * 0.10 + nickels * 0.05 + pennies * 0.01;
+
+print "The total value of your change is:", total;
+print;
+print "Thank you for using the change value calculator!";

@@ -1,0 +1,19 @@
+checker.py report
+Andrew Poock
+
+area.cal - passed
+calcode_1.cal - failed: (6,7) -> "Enter the amount of quarts:" not in [':=']
+carbohydrates.cal - failed: AssertionError, probably because there is no semicolon on the last line
+change.cal - passed
+coffee.cal - passed
+convert.cal - failed: (6,1) -> Expected 'id' found "What is the celsius temperature:"
+converter.cal - failed: (10,33) -> lb not in [';']
+f_to_c_temp.cal - failed: (10,5) -> unrecognized token '='
+ft_to_meters.cal - failed: (9,41) -> "m" not in [';']
+lightning.cal - passed
+lightning1.cal - failed: (13,1) -> print not in [';']
+lightning2.cal - failed: (7,20) -> "Enter the seconds it took for you to hear the thunder after you saw the lightning." not in [')']
+quad2.cal - passed
+slope.cal - passed
+temp.cal - failed: (11,1) -> print not in [';']
+thermo_1.cal - passed

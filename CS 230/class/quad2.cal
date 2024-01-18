@@ -1,0 +1,16 @@
+#shonosuke katagiri cs230-1
+# quad.cal -- quadratic equation solver in cal
+
+print "Welcome to the quadratic equation solver km to mile";
+print;
+
+input "Enter the number km:" k;
+
+
+root1 := k/1.609344;
+
+print "your distance is", roo1, " mile";
+print;
+print "Thanks for using the quadratic solver!";
+
+

@@ -1,0 +1,11 @@
+# temp.cal -- converts tempuratures from celcius to farenheit
+# by Andrew Poock
+
+print "This program converts tempuratures from celcius to farenheit";
+print;
+
+input "Enter a tempurature in degrees celcius:" ctemp;
+
+ftemp := 9/5 * ctemp + 32;
+
+print "The farenheit tempurature is:", ftemp, "degrees";

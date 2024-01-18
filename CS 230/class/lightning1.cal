@@ -1,0 +1,15 @@
+# lightning.cal
+# By: Luke Shaffer
+# Calculating distance to lightning strikes based off of
+# seconds between seeing lightning and hearing thunder
+
+print "This program calculates the distance to a lightning strike";
+print;
+
+input "Enter the seconds between hearing and seeing the strike: " x;
+
+distance := (1125 * x) / 5280
+
+print "The lightning is", distance, "miles away.";
+print;
+print "Thanks for using the lightning distance calculator!";

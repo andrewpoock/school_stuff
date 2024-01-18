@@ -1,0 +1,9 @@
+# ft_to_meters.cal
+
+print "This program converts feet to meters";
+print;
+
+input "Enter length in feet:" ft;
+meter := ft / 3.28;
+
+print "The length in meters is:", meter "m";

@@ -1,0 +1,8 @@
+# slope.cal -- slope solver in cal
+
+print "This is a program that calculates the slope of a line through two points.";
+print;
+
+input "Enter the points (x1, y1) and (x2, y2):" x1, y1, x2, y2;
+slope := (y2 - y1) / (x2 - x1);
+print "The slope is", slope;

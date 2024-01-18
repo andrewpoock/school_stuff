@@ -1,0 +1,7 @@
+# prog2.cal
+#   simple sequential program
+
+print "Adder";
+input "Enter two numbers:" a, b;
+
+

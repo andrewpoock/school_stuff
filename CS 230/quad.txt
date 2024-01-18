@@ -1,0 +1,15 @@
+# quad.cal -- quadratic equation solver in cal
+
+print "Welcome to the quadratic equation solver";
+print;
+
+input "Enter the coefficients (a, b, c):" a, b, c;
+
+disc_rt := sqrt(b^2 - 4 * a * c);
+root1 := (-b - disc_rt) / (2 * a);
+root2 := (-b + disc_rt) / (2 * a);
+
+print "The roots are", root1, "and", root2;
+print;
+print "Thanks for using the quadratic solver!";
+

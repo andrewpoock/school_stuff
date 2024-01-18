@@ -1,0 +1,10 @@
+#convert.cal -- A program to convert celsius to fareinheit 
+
+print "This is a program to convert celsius temperature to fareinheit";
+print;
+
+"What is the celsius temperature:" celcius;
+fareinheit :=9/5 * (celsius + 32);
+
+print "The tempreture is", fareinheit, "degrees fareinheit";
+print "Press enter to quit;

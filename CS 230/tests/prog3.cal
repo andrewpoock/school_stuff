@@ -1,0 +1,5 @@
+# prog3.cal
+#   simple assignment
+
+c := a + b;
+

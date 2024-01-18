@@ -1,0 +1,18 @@
+# lightning.cal -- Calculating the distance to a lightning strike in cal
+
+print "This program will compute the distance to a lightning strike";
+print;
+print "How many seconds have passed between the lightning and thunder?";
+print;
+
+input "Enter the time in seconds: " secs;
+
+speed := 1125;
+distInFeet := speed * secs;
+distInMiles := distInFeet / 5280;
+
+print "Your distance from the lightning strike is: ";
+print;
+print "Thanks for using the lightning distance calculator!";
+
+input "Click the enter key to quit!";

@@ -1,0 +1,5 @@
+# prog4.cal
+#   complex assignment
+
+c := -(a + b) * c^3;
+

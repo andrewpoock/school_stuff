@@ -1,0 +1,13 @@
+#Area.py --- This program compute the area of a triangle using the Herons Formula
+
+print "Input the value of a, b, c, s to solve the area of the triangle using this program";
+print;
+
+input "Enter the value of the coefficients(a,b,c,s):" a,b,c,s;
+
+area := sqrt(s*(s-a)*(s-b)*(s-c));
+
+print "The area of the triangle given the length of it sides and semi perimeter is", area;
+
+print "Thanks for using my program";
+
