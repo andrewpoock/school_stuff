@@ -14,7 +14,8 @@ CS 350 - Information Resource Management
 CS 355 - Data Mining  
 CS 373 ~ Artificial Intelligence  
 CS 385 - Concurrent Systems Fundamentals   
-CS 460 ~ Senior Design Project  
-MA 314 - Statistical Applications  
+CS 460 ~ CS Senior Design Project  
+MA 314 - Statistical Applications 
+MA 461 - Math Capstone Project
 
 Santa_Run - Greenfoot game for final project in high school
