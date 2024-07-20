@@ -1,0 +1,32 @@
+Sort Wars Results - Andrew Poock
+
+bubble_sort
+n = 1000: .06651 avg (5 trials for each average)
+n = 5000: 1.35911 avg
+n = 100000: 5.23376 avg
+
+insertion_sort
+n = 1000: .03466 avg
+n = 5000: .60697 avg
+n = 100000: 2.37834 avg
+
+insertion_sort2
+n = 1000: .01808 avg
+n = 5000: .31565 avg
+n = 100000: 1.23794 avg
+
+selection_sort
+n = 1000: .02640 avg
+n = 5000: .57682 avg
+n = 100000: 2.20060 avg
+
+shell_sort
+n = 1000: .00341 avg
+n = 5000: .02196 avg
+n = 100000: .04358 avg
+
+Observations:
+Bubble sort is consistenly slower than all the others
+Shell sort is much faster than all the others
+Python list version of Insertion sort is twice as fast as the array version in my trials
+Selection sort is similar speed as the array version of Insertion sort
