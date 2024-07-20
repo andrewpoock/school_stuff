@@ -1,0 +1,45 @@
+---
+title: "CS205-P3"
+author: "Andrew Poock"
+date: "2024-03-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(mosaic)
+library(tidyverse)
+library(dcData)
+```
+
+```{r}
+Codes <- read.csv("https://mcsp.wartburg.edu/letsche/cs205/Codes.csv")
+WS <- WorldCities %>%
+  rename("ISO2"="country", "city"="name") %>%
+  select(city, ISO2, population, region) %>%
+  group_by(ISO2) %>%
+  summarize(urbanPop=sum(population))
+
+CD <- CountryData %>% 
+  select(country, pop)
+
+CCCDCodes <- CountryCentroids %>% 
+  select(name, iso_a3) %>%
+  inner_join(CD, by=c("name"="country")) %>%
+  rename("ISO3"="iso_a3") %>%
+  inner_join(Codes, by="ISO3")
+
+Final <- left_join(WS, CCCDCodes, by="ISO2") %>%
+  mutate(urbanFrac = urbanPop/pop) %>%
+  rename("region"="name")
+```
+
+```{r}
+world_coordinates <- map_data("world")
+merged <- full_join(world_coordinates, Final, by="region")
+ggplot() +
+  geom_map( 
+    data = merged, map = merged, 
+    aes(x = long, y = lat, map_id = region, fill = urbanFrac), 
+    color = "black", linewidth = 0.2)
+```
+

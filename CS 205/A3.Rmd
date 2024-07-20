@@ -1,0 +1,37 @@
+---
+title: "Assignment 3"
+author: "Andrew Poock"
+date: "1/29/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dcData)
+library(tidyverse)
+library(mosaic)
+```
+
+## Assignment 3
+
+1) Five points of this assignment are for turning in your solution as an RMarkdown file.
+
+2)
+
+```{r}
+gf_dens(~ bmi, data = NCHS, color = ~ sex, adjust = 1) |>
+   gf_facet_wrap(~ pregnant) |>
+   gf_labs(title = "") |> 
+   gf_theme(legend.position = "right") 
+
+```
+
+3)
+```{r}
+gf_point(wage ~ exper, data = CPS85, color = ~ married) |>
+   gf_refine(scale_x_log10()) |>
+   gf_refine(scale_y_log10()) |>
+   gf_facet_wrap(~ sector, ncol = 4) |> 
+   gf_theme(legend.position = "right") |> 
+   gf_labs(title = "", caption = "")
+```

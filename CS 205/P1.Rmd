@@ -1,0 +1,22 @@
+---
+title: "CS205P1"
+author: "Andrew Poock"
+date: "2024-01-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(mosaic)
+bn <- read.csv("https://mcsp.wartburg.edu/letsche/cs205/BabyNames-2022.csv")
+```
+
+```{r}
+gbn <- bn %>%
+  filter(name=="Andrew" | name=="Samuel" | name=="Ryan" | name=="Ian") %>%
+  group_by(name, year)
+gbn %>%
+  ggplot(aes(x = year, y = count)) +
+  geom_point(aes(color = name)) +
+  ylab("Popularity") + xlab("Year")
+```

@@ -1,0 +1,98 @@
+---
+title: "CS205P2"
+author: "Andrew Poock"
+date: "2024-02-12"
+output: html_document
+---
+
+
+```{r, include=FALSE}
+library(mosaic)
+library(dcData)
+library(tidyverse)
+OB <- OrdwayBirds %>%
+  select (SpeciesName, Month, Day) %>%
+  mutate(Month = as.numeric(as.character(Month)),
+  Day = as.numeric(as.character(Day)))
+```
+
+#### Question 1
+```{r}
+n_distinct(OB$SpeciesName)
+```
+
+#### Question 2
+
+Variables used to match cases: SpeciesName
+```{r, warning=FALSE}
+Corrected <- OrdwayBirds %>%
+  inner_join(OrdwaySpeciesNames) %>%
+  select(Species=SpeciesNameCleaned, Month, Day) %>%
+  na.omit()
+```
+
+#### Question 3
+
+Variables added: Species / SpeciesNameCleaned
+
+#### Question 4
+```{r}
+Captures <- Corrected %>%
+  group_by(Species) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+head(Captures, 10)
+```
+
+Graph Setup
+```{r}
+# Major Species: n > 1000
+Majors <- Corrected %>%
+  filter(Species %in% c("Slate-colored Junco", "Tree Swallow", "Black-capped Chickadee", "American Goldfinch", "Field Sparrow"))
+ByMonth <- Majors %>%
+  group_by(Species, Month) %>%
+  summarize(count = n())
+
+gf_bar(~ Month, data = ByMonth, color = "black", fill = ~ Species) |>
+  gf_labs(title = "Major Bird Species By Month", x = "Month", y = "Number of Species") |> 
+  gf_theme(legend.position = "right")
+
+print(ByMonth)
+```
+
+#### Question 5
+
+American Goldfinch and Black-capped Chickadee are present year round
+
+#### Question 6
+
+Field Sparrow, Slate-colored Junco, Tree Swallow are migratory
+
+#### Question 7
+
+Peak Months
+
+* American Goldfinch: October
+* Black-capped Chickadee: November
+* Field Sparrow: May
+* Slate-colored Junco: October
+* Tree Swallow: March
+
+#### Question 8
+```{r}
+medians <- ByMonth %>%
+  group_by(Species) %>%
+  summarize(median = median(count))
+head(medians, 5)
+```
+
+```{r}
+good <- ByMonth %>%
+  left_join(medians) %>%
+  filter(count > median) %>%
+  group_by(Species) %>%
+  summarize(NMonths = n()) %>%
+  filter(NMonths >= 6)
+head(good)
+```
+

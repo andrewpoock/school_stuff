@@ -1,0 +1,77 @@
+---
+title: "CS205-P5"
+author: "Andrew Poock"
+date: "2024-04-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(mosaic)
+library(tidyverse)
+library(dcData)
+library(lubridate)
+Stations <- read_csv("https://mcsp.wartburg.edu/letsche/cs205/DC-Stations.csv")
+data_site <- "https://mcsp.wartburg.edu/letsche/cs205/Bike2023_Small.rds"
+Trips <- read_rds(data_site)
+Trips <- Trips %>% mutate(duration = as.numeric(edate - sdate)/60)
+```
+  
+# Question 1
+```{r}
+ggplot(data = Trips, aes(x = client, y = duration)) + geom_boxplot() + aes(colour = client) + labs(title = "Distribution of bike rental durations", y = "Duration (mins)") + coord_cartesian(ylim = c(0, 60))
+```
+
+# Question 2
+```{r}
+Trips <- Trips %>% mutate(yday = lubridate::yday(sdate),
+                          wday = lubridate::wday(sdate),
+                          hour = lubridate::hour(sdate),
+                          minute = lubridate::minute(sdate))
+ggplot(data = Trips, aes(x = yday)) + geom_density ( fill = "lightblue", color = "gray") + labs(title = "Bike trips by day of the year") + xlab("Day of the year")  + facet_grid(cols = vars(client))
+ggplot(data = Trips, aes(x = wday)) + geom_histogram (bins = 7, fill = "lightblue", color = "gray") + labs(title = "Bike trips by day of the week") + xlab("Day of the week") + facet_grid(cols = vars(client))
+ggplot(data = Trips, aes(x = hour)) + geom_density ( fill = "lightblue", color = "gray") + labs(title = "Bike trips by hour of the day") + xlab("Hour") + facet_grid(cols = vars(client))
+ggplot(data = Trips, aes(x = minute)) + geom_density ( fill = "lightblue", color = "gray") + labs(title = "Bike trips by minute of the hour") + xlab("Minute") + facet_grid(cols = vars(client))
+```
+
+# Question 3
+```{r}
+q3 <- Trips %>% group_by(hour, wday, client) %>% summarise(count = n())
+ggplot(data = q3, aes(x = hour, y = count)) + geom_line(aes(group=wday, color=wday)) + labs(title = "Number of bike rentals per hour") + facet_grid(cols = vars(client))
+```
+
+# Question 4
+```{r}
+ggplot(data = q3, aes(x = hour)) + geom_density(fill = "lightblue", color = "gray") + labs(title = "Number of bike rentals per hour") + facet_grid(cols = vars(wday), rows = vars(client))
+```
+It's much easier to recognize patterns in the data using the grouping rather than densitiy plots.
+
+# Question 5
+```{r}
+source("https://mcsp.wartburg.edu/letsche/cs205/haversine.R")
+Simple <- Stations %>% select(name, lat, long) %>% rename( sstation = name )
+Simple2 <- Simple %>% rename(estation = sstation, lat2 = lat, long2 = long)
+StationPairs <- merge(Simple, Simple2, by = NULL)
+PairDistances <- StationPairs %>% mutate(distance = haversine(lat, long, lat2, long2 )) %>% select(sstation, estation, distance)
+NewTrips <- inner_join(Trips, PairDistances)
+```
+There are 765 cases in Stations, so we get 585,225 cases from using a full outer join on Simple and Simple2
+
+# Question 6
+The stations were given different names because we want every combination of station, so we need 2 columns. We need a station to start at and a station to end at and we get every possible start to end when we do the join.
+
+# Question 7
+```{r}
+ggplot(data = NewTrips, aes(x = distance)) + geom_density(adjust = 1) + labs(title = "Ride Distance Distrubution")
+```
+The ride distance is not very similar to the distance between stations, which makes sense because people will tend to drive or take public transportation for longer commutes otherwise it would take way to long to get to the destination. They are more likely to use the bikes for short commutes because it is more convenient and better for the environment, which we can see from the density plot.
+
+# Question 8
+```{r}
+library(leaflet)
+MedDist <- NewTrips %>% group_by(sstation) %>% summarise(meddist = median(distance)) %>% rename(name = sstation)
+NewStations <- inner_join(Stations, MedDist)
+stationMap <- leaflet(NewStations) %>% addTiles() %>% addCircleMarkers(radius = 2, color = "red ") %>% setView(-77.04, 38.9, zoom = 12) %>% addCircles(radius = ~ meddist/2, color = "blue", opacity = .4)
+stationMap
+```
+
+The median distance seems greater the farther away the stations are from downtown

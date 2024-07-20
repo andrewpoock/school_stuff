@@ -1,0 +1,134 @@
+---
+title: "CS205-P4"
+author: "Andrew Poock"
+date: "2024-03-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(mosaic)
+library(tidyverse)
+library(dcData)
+library(rvest)
+library(lubridate)
+page <- "https://en.wikipedia.org/wiki/List_of_commercial_nuclear_reactors"
+tableList <- page %>%
+  read_html() %>%
+  html_nodes(css = "table") %>%
+  html_table(fill = TRUE)
+```
+
+# Question 1
+
+Ways that the data is tidy: each variable has its own column and each observation has its own row. Date format seems to be consistent. All variables in a column seem to have the same type
+
+Ways that the data is not tidy: some variable names have spaces in them, so they will need to be renamed. There are also some cells that have uneeded characters in them, which need to be cleaned up.
+
+```{r}
+Japan <- tableList[[21]]
+Japan <- Japan %>% rename(Name=Plantname,
+  Reactor=`UnitNo.`,
+  Model=Model,
+  Status=Status,
+  NetMW=`Capacity(MW)`,
+  Construction=Beginbuilding,
+  Operation=Commercialoperation,
+  Closure=Closed)
+Japan$Construction[22] <- "25 Jan 2011"
+Japan$Status <- gsub("\\[\\d+\\]", "", Japan$Status)
+Japan$Closure <- parse_date_time(Japan$Closure, c("%d %m %y", "%m %y"))
+Japan <- Japan %>% mutate(Construction = dmy(Construction),
+                          Operation = dmy(Operation),
+                          Closure = ymd(Closure),
+                          Country = "Japan")
+Japan
+```
+
+# Question 2
+```{r}
+gf_point(NetMW ~ Construction, data = Japan, color = ~ Type) |> 
+  gf_theme(legend.position = "right") |> 
+  gf_labs(title = "MegaWatt Generation by Date and Reactor Type in Japan")
+```
+
+It seems that NetMW generally increases as the date increases which makes sense because technology was evolving during that time. There are 2 types of reactors that make up most of the data, BWR and PWR, that have much higher MW output than other types of reactors. This makes sense because more efficient reactor types will be used more often.
+
+# Question 3
+```{r}
+China = tableList[[10]]
+China <- China %>% rename(Name=Plantname,
+  Reactor=`UnitNo.`,
+  Model=Model,
+  Status=Status,
+  NetMW=`Capacity(MW)`,
+  Construction=Beginbuilding,
+  Operation=Commercialoperation,
+  Closure=Closed)
+China$Reactor[5:6] <- c("I-3", "I-4")
+China$Name <- gsub("\\[\\d+\\]", "", China$Name)
+China$Construction <- gsub("\\[\\d+\\]", "", China$Construction)
+China$Operation <- gsub("\\[\\d+\\]", "", China$Operation)
+China$Operation <- gsub("\\(\\d+\\)", "", China$Operation)
+China$Operation[93:94] <- ""
+China$Reactor <- gsub("I|-", "", China$Reactor)
+China <- China %>% mutate(Construction = dmy(Construction),
+                          Operation = dmy(Operation),
+                          Reactor = as.integer(Reactor),
+                          Country = "China")
+China
+```
+
+```{r}
+Combined <- bind_rows(Japan, China)
+Combined
+```
+
+```{r}
+gf_point(NetMW ~ Construction, data = Combined, color = ~ Type) |> 
+  gf_theme(legend.position = "right") |> 
+  gf_labs(title = "MegaWatt Generation by Date and Reactor Type in Japan and China")
+```
+
+```{r}
+gf_point(NetMW ~ Construction, data = Combined, color = ~ Type) |>
+  gf_facet_wrap(~ Country, ncol = 4) |> 
+  gf_theme(legend.position = "right") |> 
+  gf_labs(title = "")
+```
+
+# Question 4
+```{r}
+US <- tableList[[44]]
+US <- US %>% rename(Name=Plantname,
+  Reactor=`UnitNo.`,
+  Model=Model,
+  Status=Status,
+  NetMW=`Capacity(MW)`,
+  Construction=Beginbuilding,
+  Operation=Commercialoperation,
+  Closure=Closed)
+US$NetMW[145] <- "605"
+US$Operation[150] <- ""
+US$Name <- gsub("\\[\\d+\\]", "", US$Name)
+US$Reactor <- gsub("\\[\\d+\\]", "", US$Reactor)
+US$Reactor <- gsub("A|B", "", US$Reactor)
+US$Construction <- gsub("\\[\\d+\\]", "", US$Construction)
+US$Operation <- gsub("\\[\\d+\\]", "", US$Operation)
+US$Closure <- gsub("\\[\\d+\\]", "", US$Closure)
+US$Construction[128] <- "1 Jan 1954" 
+US$Operation <- parse_date_time(US$Operation, c("%d %m %y", "%m %y"))
+US$Closure <- parse_date_time(US$Closure, c("%d %m %y", "%m %y"))
+US <- US %>% mutate(Construction = dmy(Construction),
+                    Operation = ymd(Operation),
+                    Closure = ymd(Closure),
+                    Reactor = as.integer(Reactor),
+                    NetMW = as.integer(NetMW))
+US
+```
+
+```{r}
+ggplot(US, aes(x = Construction, xend = Operation, y = Name, yend = Name, color = Type)) +
+  geom_segment(linewidth = 1, na.rm = TRUE) +
+  labs(title = "Time between Construction and Operation of Nuclear Reactors", x = "Date", y = "Name", color = "Type")
+```
+

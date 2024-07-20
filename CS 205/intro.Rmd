@@ -1,0 +1,25 @@
+---
+title: "Intro"
+author: "Andrew Poock"
+output: html_document
+date: "2024-01-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dcData)
+library(tidyverse)
+```
+
+Text is **compiled** into nice format. Rmd lets you:
+
+* Explain and record work
+* Store R instructions
+* Formats end report
+
+Also executes R instructions and includes the results
+
+```{r}
+BabyNames %>% group_by(year) %>% summarize(total_births=sum(count)) %>% ggplot(aes(x=year, y=total_births)) + geom_line()
+```
+
