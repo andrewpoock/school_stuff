@@ -1,0 +1,11 @@
+Variable,Description
+Location,Hosting City
+Year,Year of Olympics
+Distance,In meters. Relays are the number of swimmers by the distance swam by one swimmer
+Stroke,Stroke type
+Relay?,0-Individual/1-Relay
+Gender,Men/Women
+Team,3 Letter country code
+Athlete,Name of athlete
+Results,Time minutes:seconds.decimal
+Rank,0-DNS or DQ/1-Gold/2-Silver/3-Bronze/4-No Medal/5-No Data

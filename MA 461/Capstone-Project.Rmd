@@ -1,0 +1,88 @@
+---
+title: "Capstone Data"
+output: html_notebook
+---
+
+Dataset link:
+https://www.kaggle.com/datasets/datasciencedonut/olympic-swimming-1912-to-2020 
+
+Data collected from:
+https://olympics.com/en/olympic-games/tokyo-2020/results/swimming/men-s-100m-backstroke 
+
+This data set has a row for every person that competed in a swimming race in the Olympics from 1912-2020. It gives columns for the year, location, event, sex, team, athlete name, time, and medal. The data is from the olympics.com website but it was scraped, cleaned, and put on Kaggle for others to use. The first few rows of the data can be seen below. I believe that we can use this data to answer some interesting questions. For example,
+
+How has the winning time for each sex and each stroke changed over the years?
+
+How has the difference in time between a gold medal and no medal changed over the years?
+
+Do male and female times change at the same rate?
+
+Which country wins the most medals in swimming events?
+
+Do some countries consistently do better in specific strokes?
+
+Are there differences in performance in relays vs. individual events?
+
+The statistical categories I want to focus on representing for this project are linear regression, correlation, and model building.
+
+For this project, I am focusing on the question: Do times for each sex change at the same rate? Specifically, the 50 meter freestyle.
+
+Firstly, I imported the data set. It has 4,359 rows.
+
+```{r}
+# 4359 rows
+Swim = read.csv("Olympic_Swimming_1912-2020.csv")
+head(Swim)
+```
+
+Then, I created a subset which only includes 50m races.
+
+```{r}
+# Create subset for model
+sub <- Swim[ which(Swim$Distance..in.meters.=="50m"), ]
+head(sub)
+```
+Next, I set a random seed and sampled my data to create train, test, and validation data. Using these samples I can test how well my model is working.
+
+```{r}
+# Data Setup
+set.seed(2003)
+sample <- sample(c(TRUE, FALSE),nrow(sub),replace=TRUE,prob=c(0.7,0.3))
+train  <- sub[sample, ]
+test   <- sub[!sample, ]
+sample2 <- sample(c(TRUE, FALSE),nrow(test),replace=TRUE,prob=c(1/3,2/3))
+test <- test[sample2, ]
+validation <- test[!sample2, ]
+```
+
+I made a model explaining the finishing times using the year and sex of the athlete.
+
+```{r}
+# Model
+mod = lm(Results ~ Year + Gender, data = sub)
+summary(mod)
+```
+
+The model turned out great, with a p-value of nearly 0: much lower than the standard .05 to show statistical significance, and an r^2 value of .96 shows the great strength of the model.
+
+```{r}
+# Predict Values
+newdata = data.frame(Gender= "Men", Year=1988)
+newdata2 = data.frame(Gender= "Men", Year=2020)
+newdata3 = data.frame(Gender= "Women", Year=1988)
+newdata4 = data.frame(Gender= "Women", Year=2020)
+predict(mod, newdata, type="response")
+predict(mod, newdata2, type="response")
+predict(mod, newdata3, type="response")
+predict(mod, newdata4, type="response")
+```
+
+Using this model, I was able to use the test set to show what values the model predicts for improvement for each sex from the first year that the 50m freestyle was in the Olympics, 1988, to the most recent Olympics, 2020. The model predicted that both men's and women's times drop by about 1.4 seconds, nearly the same.
+
+To verify this visually, I made a scatterplot of the rank of each time, which means they are ordered numerically (the smallest time is 1, next is 2, and so on). This helps us represent the relative positions of values in a data set. As you can see, if you imagine lines for each sex on the plot, the distributions look nearly the same.
+
+```{r}
+xyplot(rank(Results) ~ Year, groups=Gender, data=sub)
+```
+
+In conclusion, this model and scatterplot shows a statistically significant correlation between swim times using year and sex. The predicted values of my model show nearly the same change in times during the Olympics from 1988 to 2020 for both men and women in the 50m freestyle race.
