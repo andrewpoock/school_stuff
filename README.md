@@ -12,9 +12,9 @@ CS 260 - Intro to Computer Graphics
 CS 320 - Data Structures and Algorithm Analysis  
 CS 350 - Information Resource Management  
 CS 355 - Data Mining  
-CS 373 ~ Artificial Intelligence
-CS 385 - Concurrent Systems Fundamentals  
-CS 460 ~ Senior Design Project
-MA 314 - Statistical Applications
+CS 373 ~ Artificial Intelligence  
+CS 385 - Concurrent Systems Fundamentals   
+CS 460 ~ Senior Design Project  
+MA 314 - Statistical Applications  
 
 Santa_Run - Greenfoot game for final project in high school
