@@ -2,6 +2,7 @@
 CS projects from schoolwork over the years  
   
 Wartburg Classes:  
+CS 110 - Intro to Information Systems  
 CS 120 - Intro to Computers and Programming  
 CS 205 - Data Wrangling and Visualization  
 CS 220 - Object Oriented Programming and Intro to Data Structures  
